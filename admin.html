@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <title>Admin - Date Spark</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        :root {
+            --primary: #FF6B8A;
+            --gradient: linear-gradient(135deg, #FF6B8A, #FF8E53);
+            --secondary: #6C63FF;
+            --shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+        }
+
+        body {
+            background: linear-gradient(135deg, #fdfcfb 0%, #e2d1c3 100%);
+            min-height: 100vh;
+        }
+
+        /* ===== GATE SCREEN ===== */
+        .gate {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .gate-box {
+            background: white;
+            border-radius: 20px;
+            box-shadow: var(--shadow);
+            padding: 40px;
+            width: 100%;
+            max-width: 360px;
+            text-align: center;
+        }
+
+        .gate-box .brand-icon {
+            width: 60px;
+            height: 60px;
+            background: var(--gradient);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 24px;
+            margin: 0 auto 15px;
+        }
+
+        .gate-box h1 {
+            color: #1a1a2e;
+            font-size: 22px;
+            margin-bottom: 6px;
+        }
+
+        .gate-box p {
+            color: #888;
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+
+        .gate-box input {
+            width: 100%;
+            padding: 12px 18px;
+            border: 2px solid #eee;
+            border-radius: 50px;
+            font-size: 15px;
+            margin-bottom: 15px;
+            outline: none;
+        }
+
+        .gate-box input:focus {
+            border-color: var(--primary);
+        }
+
+        .gate-box .error-msg {
+            color: #dc2626;
+            font-size: 13px;
+            min-height: 18px;
+            margin-bottom: 10px;
+        }
+
+        /* ===== BUTTONS ===== */
+        .btn {
+            padding: 12px 28px;
+            border: none;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 15px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-family: inherit;
+        }
+
+        .btn-primary {
+            background: var(--gradient);
+            color: white;
+            width: 100%;
+            justify-content: center;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 2px solid #eee;
+            color: #666;
+        }
+
+        .btn-outline:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        .btn-danger {
+            background: #fee2e2;
+            color: #dc2626;
+            padding: 6px 14px;
+            font-size: 13px;
+        }
+
+        .btn-danger:hover {
+            background: #fecaca;
+        }
+
+        /* ===== DASHBOARD ===== */
+        .dash-wrap {
+            display: none;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 30px 20px 60px;
+        }
+
+        .dash-wrap.open {
+            display: block;
+        }
+
+        .dash-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .dash-header h1 {
+            color: #1a1a2e;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 26px;
+        }
+
+        .dash-header h1 i {
+            color: var(--primary);
+        }
+
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 15px;
+            margin-bottom: 35px;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: var(--shadow);
+        }
+
+        .stat-card .stat-num {
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .stat-card .stat-label {
+            color: #888;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .panel {
+            background: white;
+            border-radius: 16px;
+            box-shadow: var(--shadow);
+            padding: 25px;
+            margin-bottom: 25px;
+            overflow-x: auto;
+        }
+
+        .panel h2 {
+            color: #1a1a2e;
+            font-size: 17px;
+            margin-bottom: 18px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+            min-width: 500px;
+        }
+
+        th {
+            text-align: left;
+            color: #999;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 8px 10px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        td {
+            padding: 12px 10px;
+            border-bottom: 1px solid #f5f5f5;
+            color: #333;
+        }
+
+        .badge {
+            padding: 3px 12px;
+            border-radius: 50px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .badge-register {
+            background: #d1fae5;
+            color: #059669;
+        }
+
+        .badge-login {
+            background: #dbeafe;
+            color: #2563eb;
+        }
+
+        .badge-admin_reset {
+            background: #fef3c7;
+            color: #d97706;
+        }
+
+        .empty-row td {
+            text-align: center;
+            color: #bbb;
+            padding: 30px;
+        }
+
+        .row-actions {
+            display: flex;
+            gap: 6px;
+        }
+
+        .btn-reset {
+            background: #e0e7ff;
+            color: #4f46e5;
+            padding: 6px 14px;
+            font-size: 13px;
+        }
+
+        .btn-reset:hover {
+            background: #c7d2fe;
+        }
+
+        /* ===== RESET MODAL ===== */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(26, 26, 46, 0.5);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .modal-overlay.open {
+            display: flex;
+        }
+
+        .modal-box {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 420px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
+        }
+
+        .modal-box h2 {
+            color: #1a1a2e;
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+
+        .modal-box p {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 15px;
+            line-height: 1.6;
+        }
+
+        .modal-box input[type="text"] {
+            width: 100%;
+            padding: 10px 16px;
+            border: 2px solid #eee;
+            border-radius: 50px;
+            font-size: 14px;
+            margin-bottom: 12px;
+            outline: none;
+        }
+
+        .modal-box input[type="text"]:focus {
+            border-color: var(--secondary);
+        }
+
+        .reveal-box {
+            background: #f5f5ff;
+            border: 2px dashed var(--secondary);
+            border-radius: 12px;
+            padding: 14px;
+            text-align: center;
+            font-family: monospace;
+            font-size: 16px;
+            font-weight: 700;
+            color: #1a1a2e;
+            margin-bottom: 15px;
+            letter-spacing: 1px;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- ===== PASSCODE GATE ===== -->
+    <div class="gate" id="gateScreen">
+        <div class="gate-box">
+            <div class="brand-icon"><i class="fas fa-user-shield"></i></div>
+            <h1>Admin Access</h1>
+            <p>Enter the admin passcode to view registered users and login activity.</p>
+            <form id="gateForm">
+                <input type="password" id="passcodeInput" placeholder="Admin passcode" autocomplete="off" required>
+                <p class="error-msg" id="gateError"></p>
+                <button type="submit" class="btn btn-primary"><i class="fas fa-unlock"></i> Enter</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- ===== DASHBOARD ===== -->
+    <div class="dash-wrap" id="dashWrap">
+        <div class="dash-header">
+            <h1><i class="fas fa-user-shield"></i> Date Spark Admin</h1>
+            <div style="display: flex; gap: 10px;">
+                <a href="date-spark.html" class="btn btn-outline"><i class="fas fa-heart"></i> Back to app</a>
+                <button class="btn btn-outline" onclick="doAdminLogout()"><i class="fas fa-sign-out-alt"></i>
+                    Logout</button>
+            </div>
+        </div>
+
+        <div class="stats-row">
+            <div class="stat-card">
+                <div class="stat-num" id="statUsers">0</div>
+                <div class="stat-label">Registered users</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-num" id="statLogins">0</div>
+                <div class="stat-label">Total logins recorded</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-num" id="statToday">0</div>
+                <div class="stat-label">Sign-ins today</div>
+            </div>
+        </div>
+
+        <div class="panel">
+            <h2><i class="fas fa-users"></i> Registered Users</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Username</th>
+                        <th>Email</th>
+                        <th>Registered On</th>
+                        <th>Total Logins</th>
+                        <th>Last Login</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody id="usersTableBody"></tbody>
+            </table>
+        </div>
+
+        <div class="panel">
+            <h2><i class="fas fa-clock-rotate-left"></i> Recent Activity (proof of registration &amp; login)</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Event</th>
+                        <th>Username</th>
+                        <th>Email</th>
+                        <th>Timestamp</th>
+                    </tr>
+                </thead>
+                <tbody id="logTableBody"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- ===== RESET PASSWORD MODAL ===== -->
+    <div class="modal-overlay" id="resetModal">
+        <div class="modal-box">
+            <h2><i class="fas fa-key"></i> Reset password</h2>
+            <p id="resetIntro">Set a new temporary password for this user. Send it to them yourself (text, call, in
+                person) - there's no email server to do it automatically.</p>
+            <div id="resetForm">
+                <input type="text" id="newPasswordInput" placeholder="New temporary password" autocomplete="off">
+                <div class="modal-actions">
+                    <button class="btn btn-primary" style="width:auto;" onclick="fillRandomPassword()"><i
+                            class="fas fa-dice"></i> Generate random</button>
+                </div>
+                <div class="modal-actions" style="margin-top: 15px;">
+                    <button class="btn btn-primary" style="flex:1;" onclick="confirmReset()"><i
+                            class="fas fa-check"></i> Set password</button>
+                    <button class="btn btn-outline" onclick="closeResetModal()">Cancel</button>
+                </div>
+            </div>
+            <div id="resetResult" style="display:none;">
+                <div class="reveal-box" id="revealedPassword"></div>
+                <p>Copy this now — it won't be shown again. Send it to the user and ask them to change it after logging
+                    in.</p>
+                <div class="modal-actions">
+                    <button class="btn btn-primary" style="flex:1;" onclick="copyRevealed()"><i class="fas fa-copy"></i>
+                        Copy</button>
+                    <button class="btn btn-outline" onclick="closeResetModal()">Done</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="auth.js"></script>
+    <script>
+        const gateScreen = document.getElementById('gateScreen');
+        const dashWrap = document.getElementById('dashWrap');
+
+        function showDashboard() {
+            gateScreen.style.display = 'none';
+            dashWrap.classList.add('open');
+            renderDashboard();
+        }
+
+        // If already unlocked this session, skip the passcode screen.
+        if (AUTH.isAdminAuthed()) {
+            showDashboard();
+        }
+
+        document.getElementById('gateForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const passcode = document.getElementById('passcodeInput').value;
+            const errorMsg = document.getElementById('gateError');
+
+            if (AUTH.adminLogin(passcode)) {
+                errorMsg.textContent = '';
+                showDashboard();
+            } else {
+                errorMsg.textContent = 'Incorrect passcode.';
+            }
+        });
+
+        function doAdminLogout() {
+            AUTH.adminLogout();
+            dashWrap.classList.remove('open');
+            gateScreen.style.display = 'flex';
+            document.getElementById('passcodeInput').value = '';
+        }
+
+        function formatDate(ts) {
+            if (!ts) return '—';
+            return new Date(ts).toLocaleString(undefined, {
+                year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
+            });
+        }
+
+        function renderDashboard() {
+            const users = AUTH.getUsersForAdmin();
+            const log = AUTH.getActivityLog();
+
+            document.getElementById('statUsers').textContent = users.length;
+            document.getElementById('statLogins').textContent = log.filter(e => e.type === 'login').length;
+
+            const startOfToday = new Date();
+            startOfToday.setHours(0, 0, 0, 0);
+            document.getElementById('statToday').textContent =
+                log.filter(e => e.type === 'login' && e.timestamp >= startOfToday.getTime()).length;
+
+            const usersBody = document.getElementById('usersTableBody');
+            if (users.length === 0) {
+                usersBody.innerHTML = `<tr class="empty-row"><td colspan="6">No accounts registered on this browser yet.</td></tr>`;
+            } else {
+                usersBody.innerHTML = users.map(u => `
+                    <tr>
+                        <td>${escapeHtml(u.username)}</td>
+                        <td>${escapeHtml(u.email)}</td>
+                        <td>${formatDate(u.createdAt)}</td>
+                        <td>${u.loginCount}</td>
+                        <td>${formatDate(u.lastLoginAt)}</td>
+                        <td class="row-actions">
+                            <button class="btn btn-reset" onclick="openResetModal('${escapeHtml(u.email)}', '${escapeHtml(u.username)}')"><i class="fas fa-key"></i></button>
+                            <button class="btn btn-danger" onclick="handleDelete('${escapeHtml(u.email)}')"><i class="fas fa-trash"></i></button>
+                        </td>
+                    </tr>
+                `).join('');
+            }
+
+            const logBody = document.getElementById('logTableBody');
+            if (log.length === 0) {
+                logBody.innerHTML = `<tr class="empty-row"><td colspan="4">No activity recorded yet.</td></tr>`;
+            } else {
+                logBody.innerHTML = log.slice(0, 100).map(entry => `
+                    <tr>
+                        <td><span class="badge badge-${entry.type}">${eventLabel(entry.type)}</span></td>
+                        <td>${escapeHtml(entry.username || '—')}</td>
+                        <td>${escapeHtml(entry.email)}</td>
+                        <td>${formatDate(entry.timestamp)}</td>
+                    </tr>
+                `).join('');
+            }
+        }
+
+        function eventLabel(type) {
+            if (type === 'register') return 'Registered';
+            if (type === 'admin_reset') return 'Password Reset';
+            return 'Login';
+        }
+
+        function handleDelete(email) {
+            if (!confirm(`Remove the account for ${email}? This can't be undone.`)) return;
+            AUTH.deleteUser(email);
+            renderDashboard();
+        }
+
+        // ===== RESET PASSWORD MODAL =====
+        let resetTargetEmail = null;
+
+        function openResetModal(email, username) {
+            resetTargetEmail = email;
+            document.getElementById('resetIntro').textContent =
+                `Set a new temporary password for ${username} (${email}). Send it to them yourself - there's no email server to do it automatically.`;
+            document.getElementById('newPasswordInput').value = '';
+            document.getElementById('resetForm').style.display = 'block';
+            document.getElementById('resetResult').style.display = 'none';
+            document.getElementById('resetModal').classList.add('open');
+        }
+
+        function closeResetModal() {
+            document.getElementById('resetModal').classList.remove('open');
+            resetTargetEmail = null;
+        }
+
+        function fillRandomPassword() {
+            document.getElementById('newPasswordInput').value = AUTH.generateTempPassword();
+        }
+
+        async function confirmReset() {
+            const newPassword = document.getElementById('newPasswordInput').value;
+            if (!resetTargetEmail) return;
+
+            const result = await AUTH.adminResetPassword(resetTargetEmail, newPassword);
+            if (!result.success) {
+                alert(result.message);
+                return;
+            }
+
+            document.getElementById('resetForm').style.display = 'none';
+            document.getElementById('resetResult').style.display = 'block';
+            document.getElementById('revealedPassword').textContent = newPassword;
+            renderDashboard();
+        }
+
+        function copyRevealed() {
+            const text = document.getElementById('revealedPassword').textContent;
+            navigator.clipboard.writeText(text).then(() => {
+                alert('Copied to clipboard.');
+            }).catch(() => { });
+        }
+
+        function escapeHtml(str) {
+            const div = document.createElement('div');
+            div.textContent = str || '';
+            return div.innerHTML;
+        }
+    </script>
+</body>
+
+</html>

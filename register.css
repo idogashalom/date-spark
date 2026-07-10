@@ -1,0 +1,219 @@
+* {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: #1a1a2e;
+}
+
+@property --a {
+    syntax: '<angle>';
+    inherits: false;
+    initial-value: 0deg;
+}
+
+.box {
+    position: relative;
+    width: 400px;
+    height: 220px;
+    background: conic-gradient(from var(--a),
+            #ff2770 0%,
+            #ff2770 5%,
+            transparent 5%,
+            transparent 40%,
+            #ff2770 50%);
+    filter: drop-shadow(0 15px 50px #000);
+    border-radius: 20px;
+    animation: rotating 4s linear infinite;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: 0.5s;
+}
+
+@keyframes rotating {
+    0% {
+        --a: 0deg;
+    }
+
+    100% {
+        --a: 360deg;
+    }
+}
+
+.box::before {
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: conic-gradient(from var(--a),
+            #45f3ff 0%,
+            #45f3ff 5%,
+            transparent 5%,
+            transparent 40%,
+            #45f3ff 50%);
+    filter: drop-shadow(0 15px 50px #000);
+    border-radius: 20px;
+    animation: rotating 4s linear infinite;
+    animation-delay: -1s;
+}
+
+.box::after {
+    content: '';
+    position: absolute;
+    inset: 4px;
+    background: #2d2d39;
+    border-radius: 15px;
+    border: 8px solid #25252d;
+}
+
+.box:hover {
+    height: 560px;
+    width: 450px;
+}
+
+.box:hover .login {
+    inset: 40px;
+}
+
+.box:hover .loginBx {
+    transform: translateY(0px);
+}
+
+.login {
+    position: absolute;
+    inset: 60px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    background: #00000033;
+    border-radius: 10px;
+    box-shadow: inset 0 10px 20px #000000;
+    color: #fff;
+    z-index: 1000;
+    border-bottom: 2px solid #ffffff80;
+    overflow: hidden;
+    transition: 0.5s;
+}
+
+.loginBx {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 16px;
+    width: 75%;
+    transition: 0.5s;
+    transform: translateY(150px);
+}
+
+.loginBx h2 {
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    font-weight: 600;
+    font-size: 1.1em;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0;
+}
+
+.loginBx h2 i {
+    color: #ff2770;
+    font-size: 1.3em;
+    text-shadow: 0 0 5px #ff2770, 0 0 20px #ff2770;
+}
+
+.loginBx input {
+    width: 100%;
+    padding: 10px 20px;
+    outline: none;
+    font-size: 1em;
+    background: #0000001a;
+    color: #ffffff;
+    border-radius: 30px;
+    border: 2px solid #fff;
+    box-sizing: border-box;
+}
+
+.loginBx input::placeholder {
+    color: #999;
+}
+
+.loginBx input[type="submit"] {
+    background: #45f3ff;
+    color: #111;
+    border: none;
+    font-weight: 500;
+    cursor: pointer;
+    transition: 0.5s;
+}
+
+.loginBx input[type="submit"]:hover {
+    box-shadow: 0 0 10px #45f3ff, 0 0 60px #45f3ff;
+}
+
+.loginBx input[type="submit"]:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    box-shadow: none;
+}
+
+.group {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.85em;
+}
+
+.group a,
+.group button.link-btn {
+    color: #fff;
+    text-decoration: none;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1em;
+    font-family: inherit;
+    padding: 0;
+}
+
+.group a:nth-child(2),
+.group button.link-btn.accent {
+    color: #ff2770;
+    font-weight: 600;
+}
+
+.form-message {
+    width: 100%;
+    text-align: center;
+    font-size: 0.85em;
+    min-height: 18px;
+    margin: 0;
+}
+
+.form-message.error {
+    color: #ff6b8a;
+}
+
+.form-message.success {
+    color: #45f3ff;
+}
+
+.auth-hint {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: #ffffff88;
+    font-size: 0.8em;
+    text-align: center;
+    max-width: 320px;
+}

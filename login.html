@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="register.css">
+    <title>Login - Date Spark</title>
+</head>
+
+<body>
+    <main>
+        <div class="box">
+            <div class="login">
+                <form class="loginBx" id="loginForm" novalidate>
+                    <h2><i class="fa-solid fa-right-to-bracket"></i> Login</h2>
+                    <input type="email" id="loginEmail" placeholder="you@example.com" autocomplete="email" required>
+                    <input type="password" id="loginPassword" placeholder="Password" autocomplete="current-password"
+                        required>
+                    <p class="form-message" id="loginMessage"></p>
+                    <input type="submit" value="Sign In" id="loginSubmit">
+                    <div class="group">
+                        <button type="button" class="link-btn" id="forgotBtn">Forgot Password</button>
+                        <a href="register.html">Sign-up</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </main>
+    <p class="auth-hint">Accounts are stored only in this browser (no server), so this login won't follow you to another
+        device.</p>
+
+    <script src="auth.js"></script>
+    <script>
+        AUTH.redirectIfAuthed('date-spark.html');
+
+        const form = document.getElementById('loginForm');
+        const message = document.getElementById('loginMessage');
+        const submitBtn = document.getElementById('loginSubmit');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+
+            submitBtn.disabled = true;
+            submitBtn.value = 'Signing in...';
+
+            const result = await AUTH.login(email, password);
+
+            if (result.success) {
+                message.className = 'form-message success';
+                message.textContent = result.message;
+                setTimeout(() => { window.location.href = 'date-spark.html'; }, 500);
+            } else {
+                message.className = 'form-message error';
+                message.textContent = result.message;
+                submitBtn.disabled = false;
+                submitBtn.value = 'Sign In';
+            }
+        });
+
+        document.getElementById('forgotBtn').addEventListener('click', () => {
+            message.className = 'form-message error';
+            message.textContent = "There's no email server connected, so passwords can't be reset by email. You'll need to register a new account.";
+        });
+    </script>
+</body>
+
+</html>

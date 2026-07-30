@@ -1,0 +1,348 @@
+  * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  }
+
+  :root {
+      --primary: #FF6B8A;
+      --gradient: linear-gradient(135deg, #FF6B8A, #FF8E53);
+      --secondary: #6C63FF;
+      --shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+  }
+
+  body {
+      background: linear-gradient(135deg, #fdfcfb 0%, #e2d1c3 100%);
+      min-height: 100vh;
+  }
+
+  /* ===== GATE SCREEN ===== */
+  .gate {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+  }
+
+  .gate-box {
+      background: white;
+      border-radius: 20px;
+      box-shadow: var(--shadow);
+      padding: 40px;
+      width: 100%;
+      max-width: 360px;
+      text-align: center;
+  }
+
+  .gate-box .brand-icon {
+      width: 60px;
+      height: 60px;
+      background: var(--gradient);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 24px;
+      margin: 0 auto 15px;
+  }
+
+  .gate-box h1 {
+      color: #1a1a2e;
+      font-size: 22px;
+      margin-bottom: 6px;
+  }
+
+  .gate-box p {
+      color: #888;
+      font-size: 14px;
+      margin-bottom: 20px;
+  }
+
+  .gate-box input {
+      width: 100%;
+      padding: 12px 18px;
+      border: 2px solid #eee;
+      border-radius: 50px;
+      font-size: 15px;
+      margin-bottom: 15px;
+      outline: none;
+  }
+
+  .gate-box input:focus {
+      border-color: var(--primary);
+  }
+
+  .gate-box .error-msg {
+      color: #dc2626;
+      font-size: 13px;
+      min-height: 18px;
+      margin-bottom: 10px;
+  }
+
+  /* ===== BUTTONS ===== */
+  .btn {
+      padding: 12px 28px;
+      border: none;
+      border-radius: 50px;
+      font-weight: 600;
+      font-size: 15px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-family: inherit;
+  }
+
+  .btn-primary {
+      background: var(--gradient);
+      color: white;
+      width: 100%;
+      justify-content: center;
+  }
+
+  .btn-primary:hover {
+      transform: translateY(-2px);
+  }
+
+  .btn-outline {
+      background: transparent;
+      border: 2px solid #eee;
+      color: #666;
+  }
+
+  .btn-outline:hover {
+      border-color: var(--primary);
+      color: var(--primary);
+  }
+
+  .btn-danger {
+      background: #fee2e2;
+      color: #dc2626;
+      padding: 6px 14px;
+      font-size: 13px;
+  }
+
+  .btn-danger:hover {
+      background: #fecaca;
+  }
+
+  /* ===== DASHBOARD ===== */
+  .dash-wrap {
+      display: none;
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 30px 20px 60px;
+  }
+
+  .dash-wrap.open {
+      display: block;
+  }
+
+  .dash-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 30px;
+      flex-wrap: wrap;
+      gap: 15px;
+  }
+
+  .dash-header h1 {
+      color: #1a1a2e;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 26px;
+  }
+
+  .dash-header h1 i {
+      color: var(--primary);
+  }
+
+  .stats-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 15px;
+      margin-bottom: 35px;
+  }
+
+  .stat-card {
+      background: white;
+      border-radius: 16px;
+      padding: 20px;
+      box-shadow: var(--shadow);
+  }
+
+  .stat-card .stat-num {
+      font-size: 32px;
+      font-weight: 700;
+      color: var(--primary);
+  }
+
+  .stat-card .stat-label {
+      color: #888;
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+  }
+
+  .panel {
+      background: white;
+      border-radius: 16px;
+      box-shadow: var(--shadow);
+      padding: 25px;
+      margin-bottom: 25px;
+      overflow-x: auto;
+  }
+
+  .panel h2 {
+      color: #1a1a2e;
+      font-size: 17px;
+      margin-bottom: 18px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+  }
+
+  table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+      min-width: 500px;
+  }
+
+  th {
+      text-align: left;
+      color: #999;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      padding: 8px 10px;
+      border-bottom: 2px solid #f0f0f0;
+  }
+
+  td {
+      padding: 12px 10px;
+      border-bottom: 1px solid #f5f5f5;
+      color: #333;
+  }
+
+  .badge {
+      padding: 3px 12px;
+      border-radius: 50px;
+      font-size: 12px;
+      font-weight: 600;
+  }
+
+  .badge-register {
+      background: #d1fae5;
+      color: #059669;
+  }
+
+  .badge-login {
+      background: #dbeafe;
+      color: #2563eb;
+  }
+
+  .badge-admin_reset {
+      background: #fef3c7;
+      color: #d97706;
+  }
+
+  .empty-row td {
+      text-align: center;
+      color: #bbb;
+      padding: 30px;
+  }
+
+  .row-actions {
+      display: flex;
+      gap: 6px;
+  }
+
+  .btn-reset {
+      background: #e0e7ff;
+      color: #4f46e5;
+      padding: 6px 14px;
+      font-size: 13px;
+  }
+
+  .btn-reset:hover {
+      background: #c7d2fe;
+  }
+
+  /* ===== RESET MODAL ===== */
+  .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(26, 26, 46, 0.5);
+      z-index: 2000;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+  }
+
+  .modal-overlay.open {
+      display: flex;
+  }
+
+  .modal-box {
+      background: white;
+      border-radius: 20px;
+      padding: 30px;
+      max-width: 420px;
+      width: 100%;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
+  }
+
+  .modal-box h2 {
+      color: #1a1a2e;
+      font-size: 18px;
+      margin-bottom: 10px;
+  }
+
+  .modal-box p {
+      color: #666;
+      font-size: 14px;
+      margin-bottom: 15px;
+      line-height: 1.6;
+  }
+
+  .modal-box input[type="text"] {
+      width: 100%;
+      padding: 10px 16px;
+      border: 2px solid #eee;
+      border-radius: 50px;
+      font-size: 14px;
+      margin-bottom: 12px;
+      outline: none;
+  }
+
+  .modal-box input[type="text"]:focus {
+      border-color: var(--secondary);
+  }
+
+  .reveal-box {
+      background: #f5f5ff;
+      border: 2px dashed var(--secondary);
+      border-radius: 12px;
+      padding: 14px;
+      text-align: center;
+      font-family: monospace;
+      font-size: 16px;
+      font-weight: 700;
+      color: #1a1a2e;
+      margin-bottom: 15px;
+      letter-spacing: 1px;
+  }
+
+  .modal-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+  }

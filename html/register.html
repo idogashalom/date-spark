@@ -15,14 +15,47 @@
             <div class="login">
                 <form class="loginBx" id="registerForm" novalidate>
                     <h2><i class="fa-solid fa-user-plus"></i> Register</h2>
-                    <input type="text" id="regUsername" placeholder="Username" autocomplete="username" required>
-                    <input type="email" id="regEmail" placeholder="you@example.com" autocomplete="email" required>
-                    <input type="password" id="regPassword" placeholder="Password (min 6 characters)"
-                        autocomplete="new-password" required>
-                    <input type="password" id="regConfirm" placeholder="Confirm password" autocomplete="new-password"
-                        required>
+
+                    <input
+                        type="text"
+                        id="regUsername"
+                        placeholder="Username"
+                        autocomplete="username"
+                        required
+                    >
+
+                    <input
+                        type="email"
+                        id="regEmail"
+                        placeholder="you@example.com"
+                        autocomplete="email"
+                        required
+                    >
+
+                    <input
+                        type="password"
+                        id="regPassword"
+                        placeholder="Password (min 6 characters)"
+                        autocomplete="new-password"
+                        required
+                    >
+
+                    <input
+                        type="password"
+                        id="regConfirm"
+                        placeholder="Confirm password"
+                        autocomplete="new-password"
+                        required
+                    >
+
                     <p class="form-message" id="regMessage"></p>
-                    <input type="submit" value="Sign Up" id="regSubmit">
+
+                    <input
+                        type="submit"
+                        value="Sign Up"
+                        id="regSubmit"
+                    >
+
                     <div class="group">
                         <a href="../html/login.html">Already have an account?</a>
                         <a href="../html/login.html">Sign-in</a>
@@ -31,11 +64,15 @@
             </div>
         </div>
     </main>
-    <p class="auth-hint">Accounts are stored only in this browser (no server), so use a password you don't reuse
-        elsewhere.</p>
+
+    <p class="auth-hint">
+        Accounts are stored only in this browser (no server), so use a password you don't reuse elsewhere.
+    </p>
 
     <script src="../js/auth.js"></script>
+
     <script>
+        // If the user is already logged in, send them to the main app.
         AUTH.redirectIfAuthed('index.html');
 
         const form = document.getElementById('registerForm');
@@ -65,10 +102,16 @@
             if (result.success) {
                 message.className = 'form-message success';
                 message.textContent = result.message;
-                setTimeout(() => { window.location.href = '../date-spark.html'; }, 700);
+
+                // Main Date Spark page is now index.html.
+                setTimeout(() => {
+                    window.location.href = 'index.html';
+                }, 700);
+
             } else {
                 message.className = 'form-message error';
                 message.textContent = result.message;
+
                 submitBtn.disabled = false;
                 submitBtn.value = 'Sign Up';
             }

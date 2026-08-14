@@ -16,43 +16,80 @@
             <div class="brand-icon"><i class="fas fa-user-shield"></i></div>
             <h1>Admin Access</h1>
             <p>Enter the admin passcode to view registered users and login activity.</p>
+
             <form id="gateForm">
-                <input type="password" id="passcodeInput" placeholder="Admin passcode" autocomplete="off" required>
+                <input
+                    type="password"
+                    id="passcodeInput"
+                    placeholder="Admin passcode"
+                    autocomplete="off"
+                    required
+                >
+
                 <p class="error-msg" id="gateError"></p>
-                <button type="submit" class="btn btn-primary"><i class="fas fa-unlock"></i> Enter</button>
+
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-unlock"></i> Enter
+                </button>
             </form>
         </div>
     </div>
 
     <!-- ===== DASHBOARD ===== -->
     <div class="dash-wrap" id="dashWrap">
+
         <div class="dash-header">
-            <h1><i class="fas fa-user-shield"></i> Date Spark Admin</h1>
+            <h1>
+                <i class="fas fa-user-shield"></i>
+                Date Spark Admin
+            </h1>
+
             <div style="display: flex; gap: 10px;">
-                <a href="../date-spark.html" class="btn btn-outline"><i class="fas fa-heart"></i> Back to app</a>
-                <button class="btn btn-outline" onclick="doAdminLogout()"><i class="fas fa-sign-out-alt"></i>
-                    Logout</button>
+
+                <!-- Main Date Spark page is now index.html -->
+                <a href="../index.html" class="btn btn-outline">
+                    <i class="fas fa-heart"></i> Back to app
+                </a>
+
+                <button
+                    class="btn btn-outline"
+                    onclick="doAdminLogout()"
+                >
+                    <i class="fas fa-sign-out-alt"></i>
+                    Logout
+                </button>
+
             </div>
         </div>
 
         <div class="stats-row">
+
             <div class="stat-card">
                 <div class="stat-num" id="statUsers">0</div>
                 <div class="stat-label">Registered users</div>
             </div>
+
             <div class="stat-card">
                 <div class="stat-num" id="statLogins">0</div>
                 <div class="stat-label">Total logins recorded</div>
             </div>
+
             <div class="stat-card">
                 <div class="stat-num" id="statToday">0</div>
                 <div class="stat-label">Sign-ins today</div>
             </div>
+
         </div>
 
         <div class="panel">
-            <h2><i class="fas fa-users"></i> Registered Users</h2>
+
+            <h2>
+                <i class="fas fa-users"></i>
+                Registered Users
+            </h2>
+
             <table>
+
                 <thead>
                     <tr>
                         <th>Username</th>
@@ -63,13 +100,22 @@
                         <th></th>
                     </tr>
                 </thead>
+
                 <tbody id="usersTableBody"></tbody>
+
             </table>
+
         </div>
 
         <div class="panel">
-            <h2><i class="fas fa-clock-rotate-left"></i> Recent Activity (proof of registration &amp; login)</h2>
+
+            <h2>
+                <i class="fas fa-clock-rotate-left"></i>
+                Recent Activity (proof of registration &amp; login)
+            </h2>
+
             <table>
+
                 <thead>
                     <tr>
                         <th>Event</th>
@@ -78,44 +124,122 @@
                         <th>Timestamp</th>
                     </tr>
                 </thead>
+
                 <tbody id="logTableBody"></tbody>
+
             </table>
+
         </div>
+
     </div>
 
     <!-- ===== RESET PASSWORD MODAL ===== -->
+
     <div class="modal-overlay" id="resetModal">
+
         <div class="modal-box">
-            <h2><i class="fas fa-key"></i> Reset password</h2>
-            <p id="resetIntro">Set a new temporary password for this user. Send it to them yourself (text, call, in
-                person) - there's no email server to do it automatically.</p>
+
+            <h2>
+                <i class="fas fa-key"></i>
+                Reset password
+            </h2>
+
+            <p id="resetIntro">
+                Set a new temporary password for this user.
+                Send it to them yourself (text, call, in person) -
+                there's no email server to do it automatically.
+            </p>
+
             <div id="resetForm">
-                <input type="text" id="newPasswordInput" placeholder="New temporary password" autocomplete="off">
+
+                <input
+                    type="text"
+                    id="newPasswordInput"
+                    placeholder="New temporary password"
+                    autocomplete="off"
+                >
+
                 <div class="modal-actions">
-                    <button class="btn btn-primary" style="width:auto;" onclick="fillRandomPassword()"><i
-                            class="fas fa-dice"></i> Generate random</button>
+
+                    <button
+                        class="btn btn-primary"
+                        style="width:auto;"
+                        onclick="fillRandomPassword()"
+                    >
+                        <i class="fas fa-dice"></i>
+                        Generate random
+                    </button>
+
                 </div>
-                <div class="modal-actions" style="margin-top: 15px;">
-                    <button class="btn btn-primary" style="flex:1;" onclick="confirmReset()"><i
-                            class="fas fa-check"></i> Set password</button>
-                    <button class="btn btn-outline" onclick="closeResetModal()">Cancel</button>
+
+                <div
+                    class="modal-actions"
+                    style="margin-top: 15px;"
+                >
+
+                    <button
+                        class="btn btn-primary"
+                        style="flex:1;"
+                        onclick="confirmReset()"
+                    >
+                        <i class="fas fa-check"></i>
+                        Set password
+                    </button>
+
+                    <button
+                        class="btn btn-outline"
+                        onclick="closeResetModal()"
+                    >
+                        Cancel
+                    </button>
+
                 </div>
+
             </div>
+
             <div id="resetResult" style="display:none;">
-                <div class="reveal-box" id="revealedPassword"></div>
-                <p>Copy this now — it won't be shown again. Send it to the user and ask them to change it after logging
-                    in.</p>
+
+                <div
+                    class="reveal-box"
+                    id="revealedPassword"
+                ></div>
+
+                <p>
+                    Copy this now — it won't be shown again.
+                    Send it to the user and ask them to change it
+                    after logging in.
+                </p>
+
                 <div class="modal-actions">
-                    <button class="btn btn-primary" style="flex:1;" onclick="copyRevealed()"><i class="fas fa-copy"></i>
-                        Copy</button>
-                    <button class="btn btn-outline" onclick="closeResetModal()">Done</button>
+
+                    <button
+                        class="btn btn-primary"
+                        style="flex:1;"
+                        onclick="copyRevealed()"
+                    >
+                        <i class="fas fa-copy"></i>
+                        Copy
+                    </button>
+
+                    <button
+                        class="btn btn-outline"
+                        onclick="closeResetModal()"
+                    >
+                        Done
+                    </button>
+
                 </div>
+
             </div>
+
         </div>
+
     </div>
 
     <script src="../js/auth.js"></script>
+
     <script>
+
         const gateScreen = document.getElementById('gateScreen');
         const dashWrap = document.getElementById('dashWrap');
 
@@ -131,48 +255,88 @@
         }
 
         document.getElementById('gateForm').addEventListener('submit', (e) => {
+
             e.preventDefault();
-            const passcode = document.getElementById('passcodeInput').value;
-            const errorMsg = document.getElementById('gateError');
+
+            const passcode =
+                document.getElementById('passcodeInput').value;
+
+            const errorMsg =
+                document.getElementById('gateError');
 
             if (AUTH.adminLogin(passcode)) {
+
                 errorMsg.textContent = '';
                 showDashboard();
+
             } else {
+
                 errorMsg.textContent = 'Incorrect passcode.';
+
             }
         });
 
         function doAdminLogout() {
+
             AUTH.adminLogout();
+
             dashWrap.classList.remove('open');
+
             gateScreen.style.display = 'flex';
+
             document.getElementById('passcodeInput').value = '';
         }
 
         function formatDate(ts) {
+
             if (!ts) return '—';
+
             return new Date(ts).toLocaleString(undefined, {
-                year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
             });
         }
 
         function renderDashboard() {
+
             const users = AUTH.getUsersForAdmin();
             const log = AUTH.getActivityLog();
 
-            document.getElementById('statUsers').textContent = users.length;
-            document.getElementById('statLogins').textContent = log.filter(e => e.type === 'login').length;
+            document.getElementById('statUsers').textContent =
+                users.length;
+
+            document.getElementById('statLogins').textContent =
+                log.filter(e => e.type === 'login').length;
 
             const startOfToday = new Date();
-            startOfToday.setHours(0, 0, 0, 0);
-            document.getElementById('statToday').textContent =
-                log.filter(e => e.type === 'login' && e.timestamp >= startOfToday.getTime()).length;
 
-            const usersBody = document.getElementById('usersTableBody');
+            startOfToday.setHours(0, 0, 0, 0);
+
+            document.getElementById('statToday').textContent =
+                log.filter(
+                    e =>
+                        e.type === 'login' &&
+                        e.timestamp >= startOfToday.getTime()
+                ).length;
+
+            const usersBody =
+                document.getElementById('usersTableBody');
+
             if (users.length === 0) {
-                usersBody.innerHTML = `<tr class="empty-row"><td colspan="6">No accounts registered on this browser yet.</td></tr>`;
+
+                usersBody.innerHTML = `
+                    <tr class="empty-row">
+                        <td colspan="6">
+                            No accounts registered on this browser yet.
+                        </td>
+                    </tr>
+                `;
+
             } else {
+
                 usersBody.innerHTML = users.map(u => `
                     <tr>
                         <td>${escapeHtml(u.username)}</td>
@@ -180,92 +344,198 @@
                         <td>${formatDate(u.createdAt)}</td>
                         <td>${u.loginCount}</td>
                         <td>${formatDate(u.lastLoginAt)}</td>
+
                         <td class="row-actions">
-                            <button class="btn btn-reset" onclick="openResetModal('${escapeHtml(u.email)}', '${escapeHtml(u.username)}')"><i class="fas fa-key"></i></button>
-                            <button class="btn btn-danger" onclick="handleDelete('${escapeHtml(u.email)}')"><i class="fas fa-trash"></i></button>
+
+                            <button
+                                class="btn btn-reset"
+                                onclick="openResetModal(
+                                    '${escapeHtml(u.email)}',
+                                    '${escapeHtml(u.username)}'
+                                )"
+                            >
+                                <i class="fas fa-key"></i>
+                            </button>
+
+                            <button
+                                class="btn btn-danger"
+                                onclick="handleDelete(
+                                    '${escapeHtml(u.email)}'
+                                )"
+                            >
+                                <i class="fas fa-trash"></i>
+                            </button>
+
                         </td>
                     </tr>
                 `).join('');
             }
 
-            const logBody = document.getElementById('logTableBody');
+            const logBody =
+                document.getElementById('logTableBody');
+
             if (log.length === 0) {
-                logBody.innerHTML = `<tr class="empty-row"><td colspan="4">No activity recorded yet.</td></tr>`;
-            } else {
-                logBody.innerHTML = log.slice(0, 100).map(entry => `
-                    <tr>
-                        <td><span class="badge badge-${entry.type}">${eventLabel(entry.type)}</span></td>
-                        <td>${escapeHtml(entry.username || '—')}</td>
-                        <td>${escapeHtml(entry.email)}</td>
-                        <td>${formatDate(entry.timestamp)}</td>
+
+                logBody.innerHTML = `
+                    <tr class="empty-row">
+                        <td colspan="4">
+                            No activity recorded yet.
+                        </td>
                     </tr>
-                `).join('');
+                `;
+
+            } else {
+
+                logBody.innerHTML = log
+                    .slice(0, 100)
+                    .map(entry => `
+                        <tr>
+                            <td>
+                                <span class="badge badge-${entry.type}">
+                                    ${eventLabel(entry.type)}
+                                </span>
+                            </td>
+
+                            <td>
+                                ${escapeHtml(entry.username || '—')}
+                            </td>
+
+                            <td>
+                                ${escapeHtml(entry.email)}
+                            </td>
+
+                            <td>
+                                ${formatDate(entry.timestamp)}
+                            </td>
+                        </tr>
+                    `)
+                    .join('');
             }
         }
 
         function eventLabel(type) {
-            if (type === 'register') return 'Registered';
-            if (type === 'admin_reset') return 'Password Reset';
+
+            if (type === 'register') {
+                return 'Registered';
+            }
+
+            if (type === 'admin_reset') {
+                return 'Password Reset';
+            }
+
             return 'Login';
         }
 
         function handleDelete(email) {
-            if (!confirm(`Remove the account for ${email}? This can't be undone.`)) return;
+
+            if (!confirm(
+                `Remove the account for ${email}? This can't be undone.`
+            )) {
+                return;
+            }
+
             AUTH.deleteUser(email);
+
             renderDashboard();
         }
 
         // ===== RESET PASSWORD MODAL =====
+
         let resetTargetEmail = null;
 
         function openResetModal(email, username) {
+
             resetTargetEmail = email;
+
             document.getElementById('resetIntro').textContent =
-                `Set a new temporary password for ${username} (${email}). Send it to them yourself - there's no email server to do it automatically.`;
+                `Set a new temporary password for ${username} (${email}). ` +
+                `Send it to them yourself - there's no email server ` +
+                `to do it automatically.`;
+
             document.getElementById('newPasswordInput').value = '';
+
             document.getElementById('resetForm').style.display = 'block';
+
             document.getElementById('resetResult').style.display = 'none';
-            document.getElementById('resetModal').classList.add('open');
+
+            document
+                .getElementById('resetModal')
+                .classList
+                .add('open');
         }
 
         function closeResetModal() {
-            document.getElementById('resetModal').classList.remove('open');
+
+            document
+                .getElementById('resetModal')
+                .classList
+                .remove('open');
+
             resetTargetEmail = null;
         }
 
         function fillRandomPassword() {
-            document.getElementById('newPasswordInput').value = AUTH.generateTempPassword();
+
+            document.getElementById('newPasswordInput').value =
+                AUTH.generateTempPassword();
         }
 
         async function confirmReset() {
-            const newPassword = document.getElementById('newPasswordInput').value;
+
+            const newPassword =
+                document.getElementById('newPasswordInput').value;
+
             if (!resetTargetEmail) return;
 
-            const result = await AUTH.adminResetPassword(resetTargetEmail, newPassword);
+            const result =
+                await AUTH.adminResetPassword(
+                    resetTargetEmail,
+                    newPassword
+                );
+
             if (!result.success) {
+
                 alert(result.message);
+
                 return;
             }
 
-            document.getElementById('resetForm').style.display = 'none';
-            document.getElementById('resetResult').style.display = 'block';
-            document.getElementById('revealedPassword').textContent = newPassword;
+            document.getElementById('resetForm').style.display =
+                'none';
+
+            document.getElementById('resetResult').style.display =
+                'block';
+
+            document.getElementById('revealedPassword').textContent =
+                newPassword;
+
             renderDashboard();
         }
 
         function copyRevealed() {
-            const text = document.getElementById('revealedPassword').textContent;
-            navigator.clipboard.writeText(text).then(() => {
-                alert('Copied to clipboard.');
-            }).catch(() => { });
+
+            const text =
+                document.getElementById('revealedPassword').textContent;
+
+            navigator.clipboard
+                .writeText(text)
+                .then(() => {
+                    alert('Copied to clipboard.');
+                })
+                .catch(() => {});
         }
 
         function escapeHtml(str) {
+
             const div = document.createElement('div');
+
             div.textContent = str || '';
+
             return div.innerHTML;
         }
+
     </script>
+
 </body>
 
 </html>

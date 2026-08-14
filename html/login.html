@@ -4,7 +4,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    >
+
     <title>Login - Date Spark</title>
 </head>
 
@@ -13,26 +18,64 @@
         <div class="box">
             <div class="login">
                 <form class="loginBx" id="loginForm" novalidate>
-                    <h2><i class="fa-solid fa-right-to-bracket"></i> Login</h2>
-                    <input type="email" id="loginEmail" placeholder="you@example.com" autocomplete="email" required>
-                    <input type="password" id="loginPassword" placeholder="Password" autocomplete="current-password"
-                        required>
+
+                    <h2>
+                        <i class="fa-solid fa-right-to-bracket"></i>
+                        Login
+                    </h2>
+
+                    <input
+                        type="email"
+                        id="loginEmail"
+                        placeholder="you@example.com"
+                        autocomplete="email"
+                        required
+                    >
+
+                    <input
+                        type="password"
+                        id="loginPassword"
+                        placeholder="Password"
+                        autocomplete="current-password"
+                        required
+                    >
+
                     <p class="form-message" id="loginMessage"></p>
-                    <input type="submit" value="Sign In" id="loginSubmit">
+
+                    <input
+                        type="submit"
+                        value="Sign In"
+                        id="loginSubmit"
+                    >
+
                     <div class="group">
-                        <button type="button" class="link-btn" id="forgotBtn">Forgot Password</button>
-                        <a href="../html/register.html">Sign-up</a>
+                        <button
+                            type="button"
+                            class="link-btn"
+                            id="forgotBtn"
+                        >
+                            Forgot Password
+                        </button>
+
+                        <a href="register.html">Sign-up</a>
                     </div>
+
                 </form>
             </div>
         </div>
     </main>
-    <p class="auth-hint">Accounts are stored only in this browser (no server), so this login won't follow you to another
-        device.</p>
 
+    <p class="auth-hint">
+        Accounts are stored only in this browser (no server), so this login won't
+        follow you to another device.
+    </p>
+
+    <!-- auth.js is in the ../js folder -->
     <script src="../js/auth.js"></script>
+
     <script>
-        AUTH.redirectIfAuthed('index.html');
+        // If the user is already logged in, send them to the main Date Spark page.
+        AUTH.redirectIfAuthed('../index.html');
 
         const form = document.getElementById('loginForm');
         const message = document.getElementById('loginMessage');
@@ -50,22 +93,34 @@
             const result = await AUTH.login(email, password);
 
             if (result.success) {
+
                 message.className = 'form-message success';
                 message.textContent = result.message;
-                setTimeout(() => { window.location.href = '../date-spark.html'; }, 500);
+
+                // Go back to the main Date Spark page.
+                setTimeout(() => {
+                    window.location.href = '../index.html';
+                }, 500);
+
             } else {
+
                 message.className = 'form-message error';
                 message.textContent = result.message;
+
                 submitBtn.disabled = false;
                 submitBtn.value = 'Sign In';
             }
         });
 
         document.getElementById('forgotBtn').addEventListener('click', () => {
+
             message.className = 'form-message error';
-            message.textContent = "There's no email server connected, so passwords can't be reset by email. You'll need to register a new account.";
+
+            message.textContent =
+                "There's no email server connected, so passwords can't be reset by email. You'll need to register a new account.";
         });
     </script>
+
 </body>
 
 </html>

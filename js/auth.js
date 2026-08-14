@@ -19,6 +19,7 @@ const AUTH = (() => {
     const SESSION_KEY = 'dateSparkSession';
     const LOG_KEY = 'dateSparkActivityLog';
     const ADMIN_SESSION_KEY = 'dateSparkAdminSession';
+
     // Change this before sharing the project - anyone who reads this file can see it.
     const ADMIN_PASSCODE = 'SparkAdmin2026';
 
@@ -45,8 +46,10 @@ const AUTH = (() => {
     function recordActivity(type, email, username) {
         const log = getLog();
         log.push({ type, email, username, timestamp: Date.now() });
-        // keep the most recent 500 entries so localStorage doesn't grow forever
+
+        // Keep the most recent 500 entries so localStorage doesn't grow forever.
         while (log.length > 500) log.shift();
+
         localStorage.setItem(LOG_KEY, JSON.stringify(log));
     }
 
@@ -61,56 +64,124 @@ const AUTH = (() => {
     function randomSalt() {
         const arr = new Uint8Array(16);
         crypto.getRandomValues(arr);
-        return Array.from(arr, b => b.toString(16).padStart(2, '0')).join('');
+
+        return Array.from(
+            arr,
+            b => b.toString(16).padStart(2, '0')
+        ).join('');
     }
 
     async function hashPassword(password, salt) {
         const encoder = new TextEncoder();
         const data = encoder.encode(salt + password);
+
         const digest = await crypto.subtle.digest('SHA-256', data);
-        return Array.from(new Uint8Array(digest), b => b.toString(16).padStart(2, '0')).join('');
+
+        return Array.from(
+            new Uint8Array(digest),
+            b => b.toString(16).padStart(2, '0')
+        ).join('');
     }
 
     async function register(username, email, password) {
         username = (username || '').trim();
         email = normalizeEmail(email || '');
 
-        if (!username) return { success: false, message: 'Please enter a username.' };
-        if (!isValidEmail(email)) return { success: false, message: 'Please enter a valid email address.' };
-        if (!password || password.length < 6) return { success: false, message: 'Password must be at least 6 characters.' };
+        if (!username) {
+            return {
+                success: false,
+                message: 'Please enter a username.'
+            };
+        }
+
+        if (!isValidEmail(email)) {
+            return {
+                success: false,
+                message: 'Please enter a valid email address.'
+            };
+        }
+
+        if (!password || password.length < 6) {
+            return {
+                success: false,
+                message: 'Password must be at least 6 characters.'
+            };
+        }
 
         const users = getUsers();
+
         if (users.some(u => u.email === email)) {
-            return { success: false, message: 'An account with that email already exists.' };
+            return {
+                success: false,
+                message: 'An account with that email already exists.'
+            };
         }
 
         const salt = randomSalt();
         const passwordHash = await hashPassword(password, salt);
-        users.push({ username, email, salt, passwordHash, createdAt: Date.now() });
+
+        users.push({
+            username,
+            email,
+            salt,
+            passwordHash,
+            createdAt: Date.now()
+        });
+
         saveUsers(users);
         recordActivity('register', email, username);
 
         createSession(email);
-        return { success: true, message: 'Account created! Redirecting...' };
+
+        return {
+            success: true,
+            message: 'Account created! Redirecting...'
+        };
     }
 
     async function login(email, password) {
         email = normalizeEmail(email || '');
-        if (!isValidEmail(email)) return { success: false, message: 'Please enter a valid email address.' };
-        if (!password) return { success: false, message: 'Please enter your password.' };
+
+        if (!isValidEmail(email)) {
+            return {
+                success: false,
+                message: 'Please enter a valid email address.'
+            };
+        }
+
+        if (!password) {
+            return {
+                success: false,
+                message: 'Please enter your password.'
+            };
+        }
 
         const users = getUsers();
         const user = users.find(u => u.email === email);
-        if (!user) return { success: false, message: 'No account found with that email.' };
+
+        if (!user) {
+            return {
+                success: false,
+                message: 'No account found with that email.'
+            };
+        }
 
         const hash = await hashPassword(password, user.salt);
+
         if (hash !== user.passwordHash) {
-            return { success: false, message: 'Incorrect email or password.' };
+            return {
+                success: false,
+                message: 'Incorrect email or password.'
+            };
         }
 
         createSession(email);
         recordActivity('login', email, user.username);
-        return { success: true, message: 'Welcome back! Redirecting...' };
+
+        return {
+            success: true,
+            message: 'Welcome back! Redirecting...'
+        };
     }
 
     function createSession(email) {
@@ -123,11 +194,18 @@ const AUTH = (() => {
 
     function getCurrentUser() {
         const email = sessionStorage.getItem(SESSION_KEY);
+
         if (!email) return null;
+
         const users = getUsers();
         const user = users.find(u => u.email === email);
+
         if (!user) return null;
-        return { username: user.username, email: user.email };
+
+        return {
+            username: user.username,
+            email: user.email
+        };
     }
 
     // Call on protected pages. Redirects to login if not authenticated.
@@ -138,6 +216,7 @@ const AUTH = (() => {
     }
 
     // Call on login/register pages. Redirects away if already authenticated.
+    // Date Spark's main page is now index.html.
     function redirectIfAuthed(appPage = 'index.html') {
         if (getCurrentUser()) {
             window.location.href = appPage;
@@ -145,12 +224,14 @@ const AUTH = (() => {
     }
 
     // ===== ADMIN =====
+
     // Separate from user accounts - gated by a passcode instead of an email/password pair.
     function adminLogin(passcode) {
         if (passcode === ADMIN_PASSCODE) {
             sessionStorage.setItem(ADMIN_SESSION_KEY, 'true');
             return true;
         }
+
         return false;
     }
 
@@ -165,9 +246,13 @@ const AUTH = (() => {
     // Users without password hash/salt - safe to display in an admin view.
     function getUsersForAdmin() {
         const log = getLog();
+
         return getUsers().map(u => {
             const userLog = log.filter(entry => entry.email === u.email);
-            const lastLogin = userLog.filter(e => e.type === 'login').slice(-1)[0];
+            const lastLogin = userLog
+                .filter(e => e.type === 'login')
+                .slice(-1)[0];
+
             return {
                 username: u.username,
                 email: u.email,
@@ -179,44 +264,82 @@ const AUTH = (() => {
     }
 
     function getActivityLog() {
-        return [...getLog()].reverse(); // most recent first
+        return [...getLog()].reverse();
     }
 
     function deleteUser(email) {
         email = normalizeEmail(email);
+
         const users = getUsers().filter(u => u.email !== email);
+
         saveUsers(users);
     }
 
     function generateTempPassword() {
-        const chars = 'ABCDEFGHJKMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
+        const chars =
+            'ABCDEFGHJKMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
+
         const arr = new Uint8Array(10);
         crypto.getRandomValues(arr);
-        return Array.from(arr, b => chars[b % chars.length]).join('');
+
+        return Array.from(
+            arr,
+            b => chars[b % chars.length]
+        ).join('');
     }
 
-    // Admin sets a brand-new password for a user - it never reads or reveals the old one.
+    // Admin sets a brand-new password for a user.
+    // It never reads or reveals the old one.
     async function adminResetPassword(email, newPassword) {
         email = normalizeEmail(email);
+
         if (!newPassword || newPassword.length < 6) {
-            return { success: false, message: 'New password must be at least 6 characters.' };
+            return {
+                success: false,
+                message: 'New password must be at least 6 characters.'
+            };
         }
 
         const users = getUsers();
         const user = users.find(u => u.email === email);
-        if (!user) return { success: false, message: 'No account found with that email.' };
+
+        if (!user) {
+            return {
+                success: false,
+                message: 'No account found with that email.'
+            };
+        }
 
         user.salt = randomSalt();
-        user.passwordHash = await hashPassword(newPassword, user.salt);
+        user.passwordHash = await hashPassword(
+            newPassword,
+            user.salt
+        );
+
         saveUsers(users);
         recordActivity('admin_reset', email, user.username);
 
-        return { success: true, message: 'Password reset.' };
+        return {
+            success: true,
+            message: 'Password reset.'
+        };
     }
 
     return {
-        register, login, logout, getCurrentUser, requireAuth, redirectIfAuthed, isValidEmail,
-        adminLogin, adminLogout, isAdminAuthed, getUsersForAdmin, getActivityLog, deleteUser,
-        adminResetPassword, generateTempPassword
+        register,
+        login,
+        logout,
+        getCurrentUser,
+        requireAuth,
+        redirectIfAuthed,
+        isValidEmail,
+        adminLogin,
+        adminLogout,
+        isAdminAuthed,
+        getUsersForAdmin,
+        getActivityLog,
+        deleteUser,
+        adminResetPassword,
+        generateTempPassword
     };
 })();

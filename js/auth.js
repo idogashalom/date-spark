@@ -138,7 +138,7 @@ const AUTH = (() => {
     }
 
     // Call on login/register pages. Redirects away if already authenticated.
-    function redirectIfAuthed(appPage = 'date-spark.html') {
+    function redirectIfAuthed(appPage = 'index.html') {
         if (getCurrentUser()) {
             window.location.href = appPage;
         }

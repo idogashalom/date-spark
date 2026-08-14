@@ -32,7 +32,7 @@
 
     <script src="../js/auth.js"></script>
     <script>
-        AUTH.redirectIfAuthed('date-spark.html');
+        AUTH.redirectIfAuthed('../date-spark.html');
 
         const form = document.getElementById('loginForm');
         const message = document.getElementById('loginMessage');
@@ -52,7 +52,7 @@
             if (result.success) {
                 message.className = 'form-message success';
                 message.textContent = result.message;
-                setTimeout(() => { window.location.href = 'date-spark.html'; }, 500);
+                setTimeout(() => { window.location.href = '../date-spark.html'; }, 500);
             } else {
                 message.className = 'form-message error';
                 message.textContent = result.message;

@@ -7,16 +7,40 @@ const AUTH = (() => {
     let client = null;
     let initializationError = '';
 
+    // Safe development diagnostic: it deliberately contains no URL, key, user,
+    // or session data. It can be inspected in the browser console.
+    function setSupabaseStatus(configured, initialized) {
+        window.DateSparkSupabaseStatus = {
+            configured: Boolean(configured),
+            clientInitialized: Boolean(initialized)
+        };
+    }
+
     function getClient() {
-        if (client) return client;
+        if (client) {
+            setSupabaseStatus(true, true);
+            return client;
+        }
         const config = window.DATE_SPARK_SUPABASE_CONFIG || {};
-        if (!window.supabase || !config.url || !config.anonKey) {
-            initializationError = 'Date Spark is not connected to Supabase yet. Please contact the site owner.';
+        const configured = Boolean(config.url && config.anonKey);
+        if (!window.supabase || !configured) {
+            initializationError = !configured
+                ? 'Supabase is not configured yet. Add the public Project URL and anon/publishable key in js/supabase-config.js.'
+                : 'The Supabase library could not be loaded. Check your connection and try again.';
+            setSupabaseStatus(configured, false);
             return null;
         }
-        client = window.supabase.createClient(config.url, config.anonKey, {
-            auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
-        });
+        try {
+            client = window.supabase.createClient(config.url, config.anonKey, {
+                auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
+            });
+        } catch (_) {
+            initializationError = 'Supabase could not be initialized. Check the public URL and anon/publishable key.';
+            setSupabaseStatus(true, false);
+            return null;
+        }
+        initializationError = '';
+        setSupabaseStatus(true, true);
         return client;
     }
 

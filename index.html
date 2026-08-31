@@ -970,7 +970,14 @@
         }
         async function loadAnonymousInbox() {
             const client = getAnonymousClient(), profile = await AUTH.getCurrentUser();
-            if (!client || !profile) { anonymousState.loading = false; return; }
+            if (!client || !profile) {
+                anonymousState.error = !client
+                    ? 'Anonymous messages are temporarily unavailable. Please try again shortly.'
+                    : 'Please sign in again to open your anonymous inbox.';
+                anonymousState.loading = false;
+                renderAnonymous();
+                return;
+            }
             anonymousState.loading = true; renderAnonymous();
             const { data: inbox, error } = await client.from('anonymous_inboxes').select('id, public_token, created_at').eq('owner_id', profile.id).order('created_at').limit(1).maybeSingle();
             if (error) { anonymousState.error = 'Could not load your inbox. Please try again.'; anonymousState.loading = false; renderAnonymous(); return; }

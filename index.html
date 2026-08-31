@@ -152,13 +152,15 @@
         </div>
 
         <section class="specials-section" id="specials" aria-labelledby="specialsTitle">
-            <div class="specials-intro"><span class="eyebrow"><i class="fas fa-sparkles"></i> Date night, upgraded</span><h2 id="specialsTitle">Pick a little <em>special</em></h2><p>Five playful ways to keep the conversation moving — no prep, no awkward silence.</p></div>
+            <div class="specials-intro"><span class="eyebrow"><i class="fas fa-sparkles"></i> Date night, upgraded</span><h2 id="specialsTitle">Pick a little <em>special</em></h2><p>Seven playful ways to keep the conversation moving — no prep, no awkward silence.</p></div>
             <div class="specials-grid">
                 <button class="special-card truth-card" data-game="truthDare"><i class="fas fa-dice"></i><strong>Truth or Dare</strong><span>Choose your courage level</span></button>
                 <button class="special-card charades-card" data-game="charades"><i class="fas fa-masks-theater"></i><strong>Charades</strong><span>Beat the clock together</span></button>
                 <button class="special-card wyr-card" data-game="wyr"><i class="fas fa-code-branch"></i><strong>Would You Rather</strong><span>Pick a side — then explain</span></button>
                 <button class="special-card nhie-card" data-game="nhie"><i class="fas fa-glass-cheers"></i><strong>Never Have I Ever</strong><span>Swap a surprising story</span></button>
-                <button class="special-card anonymous-card" data-game="anonymous"><i class="fas fa-envelope-open-text"></i><strong>Anonymous Note</strong><span>A private little prompt box</span></button>
+                <button class="special-card redgreen-card" data-game="redgreen"><i class="fas fa-flag"></i><strong>Red or Green Flag</strong><span>Compare your relationship radar</span></button>
+                <button class="special-card likely-card" data-game="likely"><i class="fas fa-people-arrows"></i><strong>Most Likely To</strong><span>Point, vote, defend your case</span></button>
+                <button class="special-card anonymous-card" data-game="anonymous"><i class="fas fa-eye"></i><strong>Let Them Say It</strong><span>Confessions, compliments &amp; chaos</span></button>
             </div>
         </section>
     </div>
@@ -168,11 +170,13 @@
     </div>
 
     <div class="modal-overlay" id="shareModal" role="dialog" aria-modal="true" aria-labelledby="shareTitle">
-        <div class="modal-box share-box"><button class="modal-close" onclick="closeModal('shareModal')" aria-label="Close share dialog"><i class="fas fa-times"></i></button><h2 id="shareTitle"><i class="fas fa-share-nodes modal-icon-primary"></i> Share this spark</h2><p>Send the question as text, or save a polished image card.</p><div class="modal-actions"><button class="btn btn-primary" id="shareTextBtn"><i class="fas fa-paper-plane"></i> Share text</button><button class="btn btn-secondary" id="shareImageBtn"><i class="fas fa-image"></i> Share image</button></div></div>
+        <div class="modal-box share-box"><button class="modal-close" onclick="closeModal('shareModal')" aria-label="Close share dialog"><i class="fas fa-times"></i></button><h2 id="shareTitle"><i class="fas fa-share-nodes modal-icon-primary"></i> Share this spark</h2><p>Send the prompt as text, WhatsApp message, or polished image card.</p><div class="modal-actions"><button class="btn btn-primary" id="shareTextBtn"><i class="fas fa-paper-plane"></i> Native share</button><button class="btn btn-outline" id="shareWhatsAppBtn"><i class="fab fa-whatsapp"></i> WhatsApp</button><button class="btn btn-outline" id="copyShareBtn"><i class="fas fa-copy"></i> Copy text</button><button class="btn btn-secondary" id="shareImageBtn"><i class="fas fa-image"></i> Export image</button></div></div>
     </div>
 
     <!-- ===== JAVASCRIPT ===== -->
-    <script src="js/auth.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="/js/supabase-config.js"></script>
+    <script src="/js/auth.js"></script>
     <script>
         // ===== QUESTION BANK =====
         // Curated, de-duplicated question sets per category (no filler/junk variants).
@@ -797,9 +801,13 @@
         }
 
         // ===== LOGOUT (real account session, no backend) =====
-        function handleLogout() {
+        async function handleLogout() {
             if (!confirm('Are you sure you want to logout?')) return;
-            AUTH.logout();
+            const result = await AUTH.logout();
+            if (!result.success) {
+                showToast(result.message, 'error');
+                return;
+            }
             window.location.href = 'html/login.html';
         }
 
@@ -860,41 +868,68 @@
 
             openTextFallback(text);
         }
+        function shareWhatsApp(payload = sharePayload || getQuestionPayload()) {
+            if (!payload) return;
+            window.open(`https://wa.me/?text=${encodeURIComponent(`${payload.title}\n\n${payload.text}\n\n— Date Spark`)}`, '_blank', 'noopener');
+        }
+        function copyShareText(payload = sharePayload || getQuestionPayload()) {
+            if (!payload) return;
+            fallbackCopy(`${payload.title}\n\n${payload.text}\n\n— Date Spark`);
+        }
         function wrapCanvasText(ctx, text, maxWidth) { const words = text.split(/\s+/), lines = []; let line = ''; words.forEach(word => { const test = line ? `${line} ${word}` : word; if (ctx.measureText(test).width > maxWidth && line) { lines.push(line); line = word; } else line = test; }); if (line) lines.push(line); return lines; }
-        function makeShareCanvas(payload) {
+        async function makeShareCanvas(payload) {
             const canvas = document.createElement('canvas'), ctx = canvas.getContext('2d'), width = 1080, pad = 100; canvas.width = width;
-            ctx.font = '600 54px Segoe UI'; const lines = wrapCanvasText(ctx, payload.text, width - pad * 2); const height = Math.max(700, 390 + lines.length * 78); canvas.height = height;
+            ctx.font = '600 54px Segoe UI'; const lines = wrapCanvasText(ctx, payload.text || '', width - pad * 2); const height = Math.max(payload.imageUrl ? 1250 : 700, 390 + lines.length * 78 + (payload.imageUrl ? 500 : 0)); canvas.height = height;
             const bg = ctx.createLinearGradient(0, 0, width, height); bg.addColorStop(0, '#ff6b8a'); bg.addColorStop(1, '#ff8e53'); ctx.fillStyle = bg; ctx.fillRect(0, 0, width, height);
+            if (payload.imageUrl) { try { const image = await new Promise((resolve, reject) => { const img = new Image(); img.crossOrigin = 'anonymous'; img.onload = () => resolve(img); img.onerror = reject; img.src = payload.imageUrl; }); const maxW = width - 200, maxH = 380, scale = Math.min(maxW / image.width, maxH / image.height), w = image.width * scale, h = image.height * scale, x = (width - w) / 2, y = height - maxH - 135; ctx.save(); ctx.beginPath(); ctx.roundRect(x, y, w, h, 20); ctx.clip(); ctx.drawImage(image, x, y, w, h); ctx.restore(); } catch (_) { /* Export the branded text card if an image cannot be loaded. */ } }
             ctx.fillStyle = 'rgba(255,255,255,.14)'; [[90,100,130],[970,120,190],[920,height - 80,125],[130,height - 70,170]].forEach(c => { ctx.beginPath(); ctx.arc(...c, 0, Math.PI * 2); ctx.fill(); });
             ctx.fillStyle = 'white'; ctx.textAlign = 'center'; ctx.font = '700 38px Segoe UI'; ctx.fillText('♥  DATE SPARK', width / 2, 105); ctx.fillStyle = 'rgba(255,255,255,.86)'; ctx.font = '600 27px Segoe UI'; ctx.fillText(payload.label.toUpperCase(), width / 2, 165);
             ctx.fillStyle = 'white'; ctx.font = '600 54px Segoe UI'; lines.forEach((line, i) => ctx.fillText(line, width / 2, 285 + i * 78)); ctx.font = '400 28px Segoe UI'; ctx.fillStyle = 'rgba(255,255,255,.86)'; ctx.fillText('A question worth lingering over.', width / 2, height - 78); return canvas;
         }
         async function shareImage(payload = sharePayload || getQuestionPayload(), downloadOnly = false) {
-            if (!payload) return; const canvas = makeShareCanvas(payload); canvas.toBlob(async blob => { if (!blob) return; const file = new File([blob], 'date-spark-question.png', { type: 'image/png' });
+            if (!payload) return; const canvas = await makeShareCanvas(payload); canvas.toBlob(async blob => { if (!blob) return; const file = new File([blob], 'date-spark-question.png', { type: 'image/png' });
                 try { if (!downloadOnly && navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) { await navigator.share({ title: payload.title, files: [file] }); showToast('Image shared!'); return; } } catch (_) { showToast('Image share was unavailable; downloading instead.', 'info'); }
                 const url = URL.createObjectURL(blob), link = document.createElement('a'); link.href = url; link.download = 'date-spark-question.png'; link.click(); setTimeout(() => URL.revokeObjectURL(url), 1000); showToast('Image downloaded!');
             }, 'image/png');
         }
         function exportCurrentQuestionImage() { shareImage(getQuestionPayload(), true); }
 
-        // ===== SPECIALS: local, family-friendly prompt banks =====
+        // ===== SPECIALS: local, safe prompt banks (100+ prompts per core game) =====
         const specialBanks = (() => {
-            const endings = ['at a picnic', 'on a rainy day', 'during a road trip', 'at home tonight', 'before dessert', 'with your best impression'];
-            const make = stems => stems.flatMap(s => endings.map(e => `${s} ${e}.`));
+            const contexts = ['on a rainy afternoon', 'before dessert', 'on a road trip', 'at a cozy café', 'while making dinner', 'during a sunset walk', 'at a game night', 'with your favorite playlist on', 'on a lazy Sunday', 'before you say goodnight'];
+            const expand = (stems, punctuation = '.') => stems.flatMap(stem => contexts.map(context => `${stem} ${context}${punctuation}`));
+            const choices = (pairs) => pairs.flatMap(pair => contexts.map(context => pair.split('|').map(option => `${option} ${context}`).join('|')));
+            // Local titles keep Charades fast, offline-friendly, and immediately recognisable.
+            const movieTitles = ['Titanic', 'Barbie', 'The Lion King', 'Frozen', 'Spider-Man', 'Black Panther', 'Avengers: Endgame', 'Mean Girls', 'The Hangover', 'Home Alone', 'Toy Story', 'Finding Nemo', 'The Incredibles', 'Shrek', 'Moana', 'The Notebook', 'Fast & Furious', 'Harry Potter and the Sorcerer\'s Stone', 'The Dark Knight', 'Inside Out', 'Jumanji', 'Jurassic Park', 'Avatar', 'Despicable Me', 'Coco', 'Ratatouille', 'Encanto', 'The Hunger Games', 'Twilight', 'The Devil Wears Prada', 'Legally Blonde', 'Clueless', '10 Things I Hate About You', 'Crazy Rich Asians', 'La La Land', 'The Greatest Showman', 'Mamma Mia!', 'A Star Is Born', 'The Princess Diaries', 'To All the Boys I\'ve Loved Before', 'Knives Out', 'Glass Onion', 'Dune', 'Oppenheimer', 'Everything Everywhere All at Once', 'The Batman', 'Top Gun: Maverick', 'Nope', 'Get Out', 'A Quiet Place', 'Scream', 'It', 'The Conjuring', 'Us', 'The Sixth Sense', 'The Exorcist', 'Beetlejuice', 'The Shining', 'The Ring', 'Coraline', 'The Matrix', 'John Wick', 'Mission: Impossible', 'Mad Max: Fury Road', 'Die Hard', 'The Bourne Identity', 'Gladiator', 'Kill Bill', 'Indiana Jones', 'Pirates of the Caribbean', 'Back to the Future', 'E.T.', 'The Goonies', 'The Breakfast Club', 'Grease', 'The Sound of Music', 'The Wizard of Oz', 'Casablanca', 'Singin\' in the Rain', 'The Godfather', 'Forrest Gump', 'The Truman Show', 'The Lord of the Rings', 'Star Wars', 'Guardians of the Galaxy', 'Iron Man', 'Wonder Woman', 'Deadpool', 'The Super Mario Bros. Movie', 'Minions', 'Kung Fu Panda', 'How to Train Your Dragon', 'The Lego Movie', 'Zootopia', 'Turning Red', 'Soul', 'Luca', 'Elemental', 'Paddington', 'The Parent Trap', 'Matilda', 'The Princess Bride', 'Night at the Museum', 'School of Rock', 'Elf'];
+            const charades = {
+                Movies: movieTitles,
+                Comedy: ['Mean Girls', 'The Hangover', 'Legally Blonde', 'Clueless', 'The Devil Wears Prada', 'School of Rock', 'Elf', 'The Princess Bride', 'The Lego Movie', 'Night at the Museum'],
+                Animation: ['Frozen', 'Toy Story', 'Finding Nemo', 'Shrek', 'Moana', 'Coco', 'Ratatouille', 'Encanto', 'Inside Out', 'How to Train Your Dragon'],
+                Superheroes: ['Spider-Man', 'Black Panther', 'Avengers: Endgame', 'The Dark Knight', 'The Batman', 'Iron Man', 'Wonder Woman', 'Deadpool', 'Guardians of the Galaxy', 'The Incredibles'],
+                Romance: ['Titanic', 'The Notebook', '10 Things I Hate About You', 'Crazy Rich Asians', 'La La Land', 'Mamma Mia!', 'A Star Is Born', 'The Princess Diaries', 'To All the Boys I\'ve Loved Before', 'Twilight'],
+                Action: ['Fast & Furious', 'Top Gun: Maverick', 'John Wick', 'Mission: Impossible', 'Mad Max: Fury Road', 'Die Hard', 'Gladiator', 'Kill Bill', 'Indiana Jones', 'Pirates of the Caribbean'],
+                Horror: ['Nope', 'Get Out', 'A Quiet Place', 'Scream', 'It', 'The Conjuring', 'Us', 'The Sixth Sense', 'The Exorcist', 'The Shining'],
+                'Classic Movies': ['The Wizard of Oz', 'Casablanca', 'Singin\' in the Rain', 'The Godfather', 'Grease', 'The Sound of Music', 'Back to the Future', 'E.T.', 'The Goonies', 'The Breakfast Club'],
+                Family: ['Home Alone', 'The Lion King', 'The Super Mario Bros. Movie', 'Minions', 'Kung Fu Panda', 'Zootopia', 'Paddington', 'The Parent Trap', 'Matilda', 'Coraline'],
+                Popular: ['Barbie', 'Dune', 'Oppenheimer', 'Everything Everywhere All at Once', 'Knives Out', 'Glass Onion', 'Avatar', 'The Hunger Games', 'The Matrix', 'The Greatest Showman'],
+                Random: movieTitles
+            };
             return {
-                truth: make(['What is a tiny thing that always makes you smile', 'Which compliment do you still remember', 'What would your younger self be proud of', 'What song instantly changes your mood', 'What is a harmless habit you have', 'What is something you want to learn', 'Which memory feels like a warm hug', 'What makes you feel most understood', 'What adventure would you happily repeat', 'What does a perfect slow morning look like']),
-                dare: make(['Give your partner a sincere three-part compliment', 'Do your best dramatic movie-trailer voice', 'Invent a handshake for the two of you', 'Show your happiest five-second dance', 'Tell a story using only sound effects', 'Make up a tiny poem about the room', 'Pretend you are accepting an award for being adorable', 'Act out your ideal snack without words', 'Give a weather forecast for your feelings', 'Name five things you appreciate about today']),
-                wyr: ['Always have breakfast in bed|Always have a surprise playlist', 'Explore a new city|Return to a favorite place', 'Cook together|Order a feast together', 'Have a long picnic|Take a midnight walk', 'Be known for kindness|Be known for courage', 'Read each other a story|Make up a story together', 'Have a cabin weekend|Have a beach weekend', 'Get one perfect photo|Get one perfect memory', 'Plan every detail|Follow a spontaneous plan', 'Receive a handwritten note|Receive an unexpected call'].flatMap(pair => endings.map(e => pair.split('|').map(x => `${x} ${e}`).join('|'))),
-                nhie: make(['Never have I ever laughed so hard I could not speak', 'Never have I ever kept a souvenir from a great day', 'Never have I ever sent a message to the wrong person', 'Never have I ever stayed up too late talking', 'Never have I ever rewatched a comfort movie', 'Never have I ever made a playlist for someone', 'Never have I ever taken the scenic route on purpose', 'Never have I ever had a nickname I secretly loved', 'Never have I ever learned a random fact just to share it', 'Never have I ever planned an imaginary vacation']),
-                charades: { Movies: ['space explorer', 'detective', 'superhero landing', 'movie monster', 'romantic comedy', 'pirate captain', 'wizard duel', 'train conductor'], Animals: ['penguin', 'golden retriever', 'sleepy cat', 'kangaroo', 'owl', 'dolphin', 'elephant', 'butterfly'], Everyday: ['brushing teeth', 'making pancakes', 'missing a bus', 'opening a present', 'building a pillow fort', 'watering a plant', 'taking a selfie', 'packing a suitcase'], Travel: ['airport security', 'reading a map', 'riding a rollercoaster', 'camping tent', 'ski lift', 'beach volleyball', 'tour guide', 'hot air balloon'] }
+                truth: expand(['What tiny thing always makes you smile', 'Which compliment do you still remember', 'What would your younger self be proud of', 'What song instantly changes your mood', 'What harmless habit do you have', 'What do you want to learn next', 'Which memory feels like a warm hug', 'What makes you feel most understood', 'What adventure would you repeat', 'What does a perfect slow morning look like', 'What are you quietly proud of']),
+                dare: expand(['Give a sincere three-part compliment', 'Do your most dramatic movie-trailer voice', 'Invent a handshake for this group', 'Show your happiest five-second dance', 'Tell a story using only sound effects', 'Make up a tiny poem about the room', 'Accept an imaginary award for being adorable', 'Act out your ideal snack without words', 'Give a weather forecast for your feelings', 'Name five things you appreciate', 'Do a kind impression of someone here']),
+                wyr: choices(['Always have breakfast in bed|Always get a surprise playlist', 'Explore a new city|Return to a favorite place', 'Cook together|Order a feast together', 'Have a long picnic|Take a midnight walk', 'Be known for kindness|Be known for courage', 'Read a story aloud|Make up a story together', 'Have a cabin weekend|Have a beach weekend', 'Get one perfect photo|Get one perfect memory', 'Plan every detail|Follow a spontaneous plan', 'Receive a handwritten note|Receive an unexpected call', 'Win every game|Make everyone laugh']),
+                nhie: expand(['Never have I ever laughed so hard I could not speak', 'Never have I ever kept a souvenir from a great day', 'Never have I ever sent a message to the wrong person', 'Never have I ever stayed up too late talking', 'Never have I ever rewatched a comfort movie', 'Never have I ever made a playlist for someone', 'Never have I ever taken the scenic route on purpose', 'Never have I ever had a nickname I secretly loved', 'Never have I ever learned a random fact just to share it', 'Never have I ever planned an imaginary vacation', 'Never have I ever pretended to know lyrics I did not know']),
+                redgreen: expand(['They remember the tiny details you share', 'They can apologize without turning it into a debate', 'They make every plan without asking what you want', 'They cheer for your wins even when they are small', 'They joke about a boundary after you set it', 'They communicate when plans change', 'They expect instant replies at all hours', 'They are kind to people when there is nothing to gain', 'They make room for your friends and hobbies', 'They pressure you to share something private'], '?'),
+                likely: expand(['Who is most likely to start a dance party', 'Who is most likely to remember the charger', 'Who is most likely to make friends in a queue', 'Who is most likely to get lost using maps', 'Who is most likely to adopt a stray plant', 'Who is most likely to suggest dessert first', 'Who is most likely to win a trivia round', 'Who is most likely to cry at a sweet movie', 'Who is most likely to plan the perfect surprise', 'Who is most likely to send the first meme'], '?'),
+                charades
             };
         })();
-        const gameState = { type: 'truth', index: -1, history: [], charades: { score: 0, seconds: 60, timer: null, category: 'Movies', wordIndex: 0 } };
-        function pickBank(name) { const bank = specialBanks[name], last = gameState.history.at(-1); let i; do i = Math.floor(Math.random() * bank.length); while (bank.length > 1 && bank[i] === last); gameState.history.push(bank[i]); if (gameState.history.length > 8) gameState.history.shift(); gameState.index = gameState.history.length - 1; return bank[i]; }
+        const gameState = { type: 'truth', mode: 'truth', prompt: '', history: [], historyIndex: -1, choices: {}, charades: { score: 0, seconds: 60, timer: null, running: false, category: 'Movies', wordIndex: 0 } };
+        function pickBank(name) { const bank = specialBanks[name]; const current = gameState.history[gameState.historyIndex]; let prompt; do { prompt = bank[Math.floor(Math.random() * bank.length)]; } while (bank.length > 1 && prompt === current); gameState.history = gameState.history.slice(0, gameState.historyIndex + 1); gameState.history.push(prompt); gameState.historyIndex = gameState.history.length - 1; return prompt; }
         function gameActions(extra = '') { return `<div class="game-actions">${extra}<button class="btn btn-outline" data-game-action="previous"><i class="fas fa-arrow-left"></i> Previous</button><button class="btn btn-primary" data-game-action="next"><i class="fas fa-arrow-right"></i> Next</button><button class="action-btn" data-game-action="share"><i class="fas fa-share-alt"></i> Share</button><button class="action-btn" data-game-action="image"><i class="fas fa-image"></i> Image</button><button class="action-btn" data-game-action="reset"><i class="fas fa-rotate-left"></i> Reset</button></div>`; }
         function renderGame(type, prompt) {
             const content = document.getElementById('gameContent'); gameState.type = type;
-            const titles = { truth: 'Truth or Dare', wyr: 'Would You Rather', nhie: 'Never Have I Ever' };
+            const titles = { truth: 'Truth or Dare', wyr: 'Would You Rather', nhie: 'Never Have I Ever', redgreen: 'Red or Green Flag', likely: "Who's Most Likely To" };
             if (type === 'charades') return renderCharades(); if (type === 'anonymous') return renderAnonymous();
             if (!prompt) {
                 const bank = type === 'truth' ?
@@ -903,7 +938,9 @@
                 prompt = pickBank(bank);
             }
             gameState.prompt = prompt;
-            const body = type === 'wyr' ? (() => { const [a,b] = prompt.split('|'); return `<div class="choice-pair"><button class="choice-btn" data-choice="A"><b>A</b>${escapeHtml(a)}</button><span>or</span><button class="choice-btn" data-choice="B"><b>B</b>${escapeHtml(b)}</button></div>`; })() : `<p class="game-prompt">${escapeHtml(prompt)}</p>${type === 'nhie' ? '<div class="choice-pair compact"><button class="choice-btn" data-choice="Have">I have</button><button class="choice-btn" data-choice="Never">Never</button></div>' : ''}`;
+            const selected = gameState.choices[prompt];
+            const choice = (value, title, detail = '') => `<button class="choice-btn ${selected === value ? 'selected' : ''}" data-choice="${value}" aria-pressed="${selected === value}"><b>${title}</b>${escapeHtml(detail)}</button>`;
+            const body = type === 'wyr' ? (() => { const [a,b] = prompt.split('|'); return `<div class="choice-pair">${choice('A', 'A', a)}<span>or</span>${choice('B', 'B', b)}</div>`; })() : `<p class="game-prompt">${escapeHtml(prompt)}</p>${type === 'nhie' ? `<div class="choice-pair compact">${choice('Have', 'I have')}${choice('Never', 'Never')}</div>` : ''}${type === 'redgreen' ? `<div class="choice-pair compact">${choice('Red flag', 'Red flag')}${choice('Green flag', 'Green flag')}</div>` : ''}${type === 'likely' ? `<div class="choice-pair compact">${choice('Me', 'Me')}${choice('You', 'You')}${choice('Tie', 'Tie')}</div>` : ''}`;
             const modeControls = type === 'truth' ?
                 `<div class="mode-switch">
                     <button data-mode="truth" class="${gameState.mode === 'truth' ? 'active' : ''}">Truth</button>
@@ -914,19 +951,74 @@
 
             content.innerHTML = `<span class="game-kicker">SPECIALS</span><h2 id="gameTitle">${titles[type]}</h2>${modeControls}${body}${gameActions()}`;
         }
-        function renderCharades() { const c = gameState.charades, words = specialBanks.charades[c.category], word = words[c.wordIndex % words.length]; document.getElementById('gameContent').innerHTML = `<span class="game-kicker">SPECIALS</span><h2 id="gameTitle">Charades</h2><div class="category-tabs">${Object.keys(specialBanks.charades).map(x => `<button data-category="${x}" class="${x === c.category ? 'active' : ''}">${x}</button>`).join('')}</div><div class="timer-ring"><strong>${c.seconds}</strong><span>seconds</span></div><p class="game-prompt charade-word">${escapeHtml(word)}</p><p class="scoreline">Score: <b>${c.score}</b></p><div class="game-actions"><button class="btn btn-success" data-game-action="correct">Correct +1</button><button class="btn btn-outline" data-game-action="skip">Skip</button><button class="btn btn-primary" data-game-action="start">${c.timer ? 'Running…' : 'Start 60s'}</button><button class="action-btn" data-game-action="reset">Reset</button></div>`; }
+        function renderCharades() { const c = gameState.charades, words = specialBanks.charades[c.category], word = words[c.wordIndex % words.length], timerLabel = c.running ? 'Pause' : (c.seconds === 60 ? 'Start 60s' : 'Resume'); document.getElementById('gameContent').innerHTML = `<span class="game-kicker">SPECIALS</span><h2 id="gameTitle">Charades</h2><div class="category-tabs">${Object.keys(specialBanks.charades).map(x => `<button data-category="${x}" class="${x === c.category ? 'active' : ''}" ${c.running ? 'disabled' : ''}>${x}</button>`).join('')}</div><div class="timer-ring"><strong>${c.seconds}</strong><span>seconds</span></div><p class="game-prompt charade-word">${escapeHtml(word)}</p><p class="scoreline" aria-live="polite">Score: <b>${c.score}</b></p><div class="game-actions"><button class="btn btn-success" data-game-action="correct">Correct +1</button><button class="btn btn-outline" data-game-action="skip">Skip</button><button class="btn btn-primary" data-game-action="timer">${timerLabel}</button><button class="action-btn" data-game-action="share"><i class="fas fa-share-alt"></i> Share</button><button class="action-btn" data-game-action="reset">Reset</button></div>`; }
         function renderAnonymous() { const inbox = safeParse(localStorage.getItem('dateSparkAnonymousInbox'), []); document.getElementById('gameContent').innerHTML = `<span class="game-kicker">SPECIALS</span><h2 id="gameTitle">Anonymous Note</h2><p class="disclosure"><i class="fas fa-circle-info"></i> Demo only: notes and replies stay in this browser. This is not an anonymous service.</p><label class="field-label">Create a prompt<input id="anonymousPrompt" maxlength="180" placeholder="What made you smile today?"></label><div class="game-actions"><button class="btn btn-primary" data-game-action="create-note">Create link</button></div><div id="noteLink" class="link-display" hidden></div><label class="field-label">Add a demo response<input id="anonymousReply" maxlength="240" placeholder="Write a kind reply…"></label><div class="game-actions"><button class="btn btn-secondary" data-game-action="save-reply">Save reply</button><button class="action-btn" data-game-action="clear-inbox">Clear inbox</button></div><h3 class="inbox-title">Local inbox (${inbox.length})</h3><div class="inbox">${inbox.length ? inbox.map((x,i) => `<div><b>${escapeHtml(x.prompt)}</b><p>${escapeHtml(x.reply)}</p><button data-delete-note="${i}" aria-label="Delete reply"><i class="fas fa-trash"></i></button></div>`).join('') : '<p>No responses yet — your demo inbox is ready.</p>'}</div>`; }
+        // ===== LET THEM SAY IT: owner-only Supabase inbox =====
+        const anonymousState = { inbox: null, messages: [], filter: 'all', loading: false };
+        let anonymousClient = null;
+        function getAnonymousClient() {
+            if (anonymousClient) return anonymousClient;
+            const config = window.DATE_SPARK_SUPABASE_CONFIG || {};
+            if (!window.supabase || !config.url || !config.anonKey) return null;
+            anonymousClient = window.supabase.createClient(config.url, config.anonKey, { auth: { persistSession: true, autoRefreshToken: true } });
+            return anonymousClient;
+        }
+        function anonymousLink(token) { return `${window.location.origin}/html/anonymous.html?token=${encodeURIComponent(token)}`; }
+        function anonymousTime(value) { const seconds = Math.max(0, Math.floor((Date.now() - new Date(value).getTime()) / 1000)); if (seconds < 60) return 'just now'; if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`; if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`; return `${Math.floor(seconds / 86400)}d ago`; }
+        async function ownerImageUrl(path) {
+            if (!path) return '';
+            const client = getAnonymousClient();
+            const { data } = await client.storage.from('anonymous-message-images').createSignedUrl(path, 3600);
+            return data?.signedUrl || '';
+        }
+        async function loadAnonymousInbox() {
+            const client = getAnonymousClient(), profile = await AUTH.getCurrentUser();
+            if (!client || !profile) { anonymousState.loading = false; return; }
+            anonymousState.loading = true; renderAnonymous();
+            const { data: inbox, error } = await client.from('anonymous_inboxes').select('id, public_token, created_at').eq('owner_id', profile.id).order('created_at').limit(1).maybeSingle();
+            if (error) { anonymousState.error = 'Could not load your inbox. Please try again.'; anonymousState.loading = false; renderAnonymous(); return; }
+            anonymousState.inbox = inbox || null;
+            if (inbox) {
+                const { data: messages, error: messageError } = await client.from('anonymous_messages').select('id, message_text, image_path, created_at, is_read').eq('inbox_id', inbox.id).order('created_at', { ascending: false });
+                anonymousState.messages = messageError ? [] : messages || [];
+                await Promise.all(anonymousState.messages.filter(message => message.image_path).map(async message => { message.imageUrl = await ownerImageUrl(message.image_path); }));
+            } else anonymousState.messages = [];
+            anonymousState.error = ''; anonymousState.loading = false; renderAnonymous();
+        }
+        async function renderAnonymous() {
+            const content = document.getElementById('gameContent');
+            if (!content) return;
+            const unread = anonymousState.messages.filter(message => !message.is_read).length;
+            if (anonymousState.loading) { content.innerHTML = `<span class="game-kicker">SPECIALS</span><h2 id="gameTitle">LET THEM SAY IT</h2><p class="anonymous-loading"><i class="fas fa-spinner fa-spin"></i> Opening your secret inbox...</p>`; return; }
+            if (anonymousState.error) { content.innerHTML = `<span class="game-kicker">SPECIALS</span><h2 id="gameTitle">LET THEM SAY IT</h2><p class="disclosure">${escapeHtml(anonymousState.error)}</p><div class="game-actions"><button class="btn btn-primary" data-game-action="reload-anonymous">Try again</button></div>`; return; }
+            if (!anonymousState.inbox) { content.innerHTML = `<section class="anonymous-owner"><span class="game-kicker">SPECIALS</span><h2 id="gameTitle">LET THEM SAY IT <span aria-hidden="true">&#128064;</span></h2><p class="anonymous-lede">Your anonymous corner for confessions, compliments, chaos and everything people are too shy to say out loud.</p><div class="anonymous-orbit"><i class="fas fa-envelope-open-text"></i><span>say it</span></div><h3>Create your anonymous inbox</h3><p>Make one personal link, drop it anywhere, and let the messages roll in. Names are never requested or shown.</p><div class="game-actions"><button class="btn btn-primary" data-game-action="create-anonymous"><i class="fas fa-link"></i> Create My Anonymous Link</button></div></section>`; return; }
+            const link = anonymousLink(anonymousState.inbox.public_token);
+            const messages = anonymousState.messages.filter(message => anonymousState.filter === 'all' || !message.is_read);
+            content.innerHTML = `<section class="anonymous-owner"><span class="game-kicker">SPECIALS</span><h2 id="gameTitle">LET THEM SAY IT <span aria-hidden="true">&#128064;</span></h2><p class="anonymous-lede">Your anonymous inbox is ready. Drop this link anywhere and let the messages roll in.</p><div class="anonymous-link-panel"><span>Your personal link</span><code>${escapeHtml(link)}</code><div class="anonymous-link-actions"><button class="btn btn-secondary" data-game-action="copy-anonymous-link"><i class="fas fa-copy"></i> Copy My Link</button><button class="btn btn-outline" data-game-action="share-anonymous-link"><i class="fas fa-share-nodes"></i> Share My Link</button></div></div><div class="anonymous-inbox-heading"><div><h3>Your Secret Inbox <span aria-hidden="true">&#128064;</span></h3><p>${unread ? `You have ${unread} new ${unread === 1 ? 'message' : 'messages'}.` : 'No new messages right now.'}</p></div>${anonymousState.messages.length ? '<button class="action-btn danger-action" data-game-action="clear-anonymous">Clear all</button>' : ''}</div><div class="mode-switch anonymous-filters"><button data-anonymous-filter="all" class="${anonymousState.filter === 'all' ? 'active' : ''}">All <span>${anonymousState.messages.length}</span></button><button data-anonymous-filter="unread" class="${anonymousState.filter === 'unread' ? 'active' : ''}">Unread <span>${unread}</span></button></div><div class="anonymous-inbox">${messages.length ? messages.map(message => `<article class="anonymous-message ${message.is_read ? '' : 'is-unread'}" data-message-id="${message.id}"><div class="anonymous-message-meta"><span>${message.is_read ? 'Read' : 'New'}</span><time>${anonymousTime(message.created_at)}</time></div>${message.message_text ? `<p>${escapeHtml(message.message_text)}</p>` : ''}${message.imageUrl ? `<img src="${escapeHtml(message.imageUrl)}" alt="Anonymous attachment">` : message.image_path ? '<p class="image-unavailable">Image attachment unavailable.</p>' : ''}<div class="anonymous-message-actions"><button class="action-btn" data-game-action="share-anonymous-message" data-message-id="${message.id}"><i class="fas fa-share-alt"></i> Share</button><button class="action-btn" data-game-action="read-anonymous-message" data-message-id="${message.id}">${message.is_read ? 'Mark unread' : 'Mark read'}</button><button class="action-btn danger-action" data-game-action="delete-anonymous-message" data-message-id="${message.id}"><i class="fas fa-trash"></i> Delete</button></div></article>`).join('') : `<div class="anonymous-empty"><i class="fas fa-envelope-open-text"></i><h3>No secrets yet</h3><p>Share your link and see what people have been too shy to tell you.</p></div>`}</div></section>`;
+        }
+        function anonymousMessagePayload(message) { return { title: 'Someone anonymously sent me', label: 'Anonymous message', eyebrow: 'SOMEONE ANONYMOUSLY SENT YOU...', text: message.message_text || 'An anonymous image message', imageUrl: message.imageUrl || '', footer: 'Anonymous  •  Date Spark' }; }
+        async function createAnonymousInbox() {
+            const client = getAnonymousClient(), profile = await AUTH.getCurrentUser();
+            if (!client || !profile) return showToast('Please sign in to create your anonymous link.', 'error');
+            const { data, error } = await client.from('anonymous_inboxes').insert({ owner_id: profile.id }).select('id, public_token, created_at').single();
+            if (error || !data) return showToast('Could not create your link. Please try again.', 'error');
+            anonymousState.inbox = data; anonymousState.messages = []; renderAnonymous(); showToast('Your anonymous inbox is ready.');
+        }
+        async function updateAnonymousRead(id, isRead) { const client = getAnonymousClient(); const { error } = await client.from('anonymous_messages').update({ is_read: isRead }).eq('id', id); if (error) return showToast('Could not update that message.', 'error'); const message = anonymousState.messages.find(item => String(item.id) === String(id)); if (message) message.is_read = isRead; renderAnonymous(); }
+        async function deleteAnonymousMessage(id) { if (!confirm('Delete this anonymous message?')) return; const client = getAnonymousClient(); const { error } = await client.from('anonymous_messages').delete().eq('id', id); if (error) return showToast('Could not delete that message.', 'error'); anonymousState.messages = anonymousState.messages.filter(message => String(message.id) !== String(id)); renderAnonymous(); showToast('Message deleted.', 'info'); }
         function openSpecial(game) {
             stopCharadesTimer();
+            if (game === 'anonymous') { anonymousState.error = ''; anonymousState.inbox = null; anonymousState.messages = []; anonymousState.loading = true; renderAnonymous(); openModal('specialsModal'); loadAnonymousInbox(); return; }
             gameState.history = [];
-            gameState.index = -1;
+            gameState.historyIndex = -1;
+            gameState.choices = {};
             gameState.mode = game === 'truthDare' ? 'truth' : null;
             if (game === 'truthDare') renderGame('truth'); else renderGame(game);
             openModal('specialsModal');
         }
 
         function getGamePayload() {
-            const titles = { truth: 'Truth or Dare', wyr: 'Would You Rather', nhie: 'Never Have I Ever', charades: 'Date Spark Charades' };
+            const titles = { truth: 'Truth or Dare', wyr: 'Would You Rather', nhie: 'Never Have I Ever', redgreen: 'Red or Green Flag', likely: "Who's Most Likely To", charades: 'Date Spark Charades' };
             const prompt = gameState.type === 'charades'
                 ? specialBanks.charades[gameState.charades.category][gameState.charades.wordIndex % specialBanks.charades[gameState.charades.category].length]
                 : gameState.prompt;
@@ -938,6 +1030,7 @@
                 clearInterval(gameState.charades.timer);
                 gameState.charades.timer = null;
             }
+            gameState.charades.running = false;
         }
 
         function nextCharade(scored) {
@@ -949,6 +1042,7 @@
         function startCharades() {
             if (gameState.charades.timer) return;
             if (gameState.charades.seconds < 1) gameState.charades.seconds = 60;
+            gameState.charades.running = true;
             gameState.charades.timer = setInterval(() => {
                 gameState.charades.seconds -= 1;
                 if (gameState.charades.seconds <= 0) {
@@ -987,8 +1081,10 @@
         document.querySelectorAll('.special-card').forEach(card => card.addEventListener('click', () => openSpecial(card.dataset.game)));
         document.querySelector('[data-close-specials]').addEventListener('click', () => { stopCharadesTimer(); closeModal('specialsModal'); });
         document.getElementById('shareTextBtn').addEventListener('click', () => shareText());
+        document.getElementById('shareWhatsAppBtn').addEventListener('click', () => shareWhatsApp());
+        document.getElementById('copyShareBtn').addEventListener('click', () => copyShareText());
         document.getElementById('shareImageBtn').addEventListener('click', () => shareImage());
-        document.getElementById('gameContent').addEventListener('click', event => {
+        document.getElementById('gameContent').addEventListener('click', async event => {
             const button = event.target.closest('button');
             if (!button) return;
             if (button.dataset.mode) {
@@ -997,8 +1093,9 @@
                 renderGame('truth', pickBank(bank));
                 return;
             }
-            if (button.dataset.category) { gameState.charades.category = button.dataset.category; gameState.charades.wordIndex = 0; renderCharades(); return; }
-            if (button.dataset.choice) { button.classList.toggle('selected'); return; }
+            if (button.dataset.category) { stopCharadesTimer(); gameState.charades.category = button.dataset.category; gameState.charades.wordIndex = 0; renderCharades(); return; }
+            if (button.dataset.choice) { gameState.choices[gameState.prompt] = button.dataset.choice; renderGame(gameState.type, gameState.prompt); return; }
+            if (button.dataset.anonymousFilter) { anonymousState.filter = button.dataset.anonymousFilter; renderAnonymous(); return; }
             if (button.dataset.deleteNote !== undefined) {
                 const inbox = safeParse(localStorage.getItem('dateSparkAnonymousInbox'), []);
                 inbox.splice(Number(button.dataset.deleteNote), 1);
@@ -1006,6 +1103,14 @@
                 renderAnonymous(); return;
             }
             switch (button.dataset.gameAction) {
+                case 'reload-anonymous': loadAnonymousInbox(); break;
+                case 'create-anonymous': createAnonymousInbox(); break;
+                case 'copy-anonymous-link': fallbackCopy(anonymousLink(anonymousState.inbox.public_token)); break;
+                case 'share-anonymous-link': openShare({ title: 'My Date Spark anonymous inbox', label: 'Let Them Say It', text: `Tell me something you've always wanted to say...\n\nNo pressure. No awkwardness.\n\n${anonymousLink(anonymousState.inbox.public_token)}` }); break;
+                case 'share-anonymous-message': { const message = anonymousState.messages.find(item => String(item.id) === String(button.dataset.messageId)); if (message) { openShare(anonymousMessagePayload(message)); if (!message.is_read) updateAnonymousRead(message.id, true); } break; }
+                case 'read-anonymous-message': { const message = anonymousState.messages.find(item => String(item.id) === String(button.dataset.messageId)); if (message) updateAnonymousRead(message.id, !message.is_read); break; }
+                case 'delete-anonymous-message': deleteAnonymousMessage(button.dataset.messageId); break;
+                case 'clear-anonymous': { if (!confirm('Delete every message in your anonymous inbox?')) break; const client = getAnonymousClient(); const { error } = await client.from('anonymous_messages').delete().eq('inbox_id', anonymousState.inbox.id); if (error) showToast('Could not clear your inbox.', 'error'); else { anonymousState.messages = []; renderAnonymous(); showToast('Inbox cleared.', 'info'); } break; }
                 case 'next': {
                     const bank = gameState.type === 'truth' ?
                         (gameState.mode === 'random' ? (Math.random() < .5 ? 'truth' : 'dare') : gameState.mode || 'truth') :
@@ -1013,15 +1118,15 @@
                     renderGame(gameState.type, pickBank(bank));
                     break;
                 }
-                case 'previous': { const previous = gameState.history[Math.max(0, gameState.history.length - 2)]; if (previous) renderGame(gameState.type, previous); break; }
+                case 'previous': { if (gameState.historyIndex > 0) { gameState.historyIndex -= 1; renderGame(gameState.type, gameState.history[gameState.historyIndex]); } break; }
                 case 'share': openShare(getGamePayload()); break;
                 case 'image': shareImage(getGamePayload(), true); break;
                 case 'correct': nextCharade(true); break;
                 case 'skip': nextCharade(false); break;
-                case 'start': startCharades(); break;
+                case 'timer': if (gameState.charades.running) { stopCharadesTimer(); renderCharades(); } else startCharades(); break;
                 case 'reset':
                     stopCharadesTimer();
-                    if (gameState.type === 'charades') { gameState.charades = { score: 0, seconds: 60, timer: null, category: 'Movies', wordIndex: 0 }; renderCharades(); }
+                    if (gameState.type === 'charades') { gameState.charades = { score: 0, seconds: 60, timer: null, running: false, category: 'Movies', wordIndex: 0 }; renderCharades(); }
                     else { gameState.history = []; renderGame(gameState.type); }
                     break;
                 case 'create-note': {
@@ -1060,9 +1165,9 @@
         });
 
         // ===== INIT =====
-        (function init() {
-            AUTH.requireAuth('html/login.html');
-            const currentUser = AUTH.getCurrentUser();
+        (async function init() {
+            const currentUser = await AUTH.requireAuth('html/login.html');
+            if (!currentUser) return;
             if (currentUser) {
                 document.getElementById('userGreeting').textContent = `Hi, ${currentUser.username}`;
             }

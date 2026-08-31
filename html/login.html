@@ -56,7 +56,7 @@
                             Forgot Password
                         </button>
 
-                        <a href="html/register.html">Sign-up</a>
+                        <a href="/html/register.html">Sign-up</a>
                     </div>
 
                 </form>
@@ -65,11 +65,11 @@
     </main>
 
     <p class="auth-hint">
-        Accounts are stored only in this browser (no server), so this login won't
-        follow you to another device.
+        Sign in securely from any device. Your account is protected by Date Spark's authentication service.
     </p>
 
-    <!-- auth.js is in the ./js folder -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="/js/supabase-config.js"></script>
     <script src="/js/auth.js"></script>
 
     <script>
@@ -111,12 +111,15 @@
             }
         });
 
-        document.getElementById('forgotBtn').addEventListener('click', () => {
-
-            message.className = 'form-message error';
-
-            message.textContent =
-                "There's no email server connected, so passwords can't be reset by email. You'll need to register a new account.";
+        document.getElementById('forgotBtn').addEventListener('click', async () => {
+            const email = document.getElementById('loginEmail').value.trim();
+            if (!AUTH.isValidEmail(email)) {
+                message.className = 'form-message error';
+                message.textContent = 'Enter your email address first.';
+                return;
+            }
+            message.className = 'form-message success';
+            message.textContent = 'Use the password-reset email flow configured in Supabase for this account.';
         });
     </script>
 

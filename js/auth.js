@@ -1,773 +1,184 @@
-
 /*
-    Date Spark auth (client-side only, no backend)
-
-    ------------------------------------------------
-
-    Users are stored in localStorage as a list of:
-    { username, email, salt, passwordHash }
-
-    Passwords are salted and hashed with SHA-256 before storage,
-    so a raw password is never saved.
-
-    IMPORTANT:
-    This is still NOT secure like real authentication.
-    Anyone with DevTools access can inspect localStorage and this file.
-
-    An activity log records every register/login event.
-
-    admin.html reads the user list and activity log through
-    a passcode gate.
-*/
-
+ * Date Spark authentication client. Supabase Auth is the source of truth for
+ * accounts and sessions; Date Spark never stores passwords, roles, user lists,
+ * or activity logs in browser storage.
+ */
 const AUTH = (() => {
+    let client = null;
+    let initializationError = '';
 
-    // ===== STORAGE KEYS =====
-
-    const USERS_KEY = 'dateSparkUsers';
-    const SESSION_KEY = 'dateSparkSession';
-    const LOG_KEY = 'dateSparkActivityLog';
-    const ADMIN_SESSION_KEY = 'dateSparkAdminSession';
-
-    // Change this before sharing the project.
-    // IMPORTANT: Because this is client-side JavaScript,
-    // this passcode is NOT secure for a real application.
-    const ADMIN_PASSCODE = 'SparkAdmin2026';
-
-
-    // ===== USERS =====
-
-    function getUsers() {
-
-        try {
-
-            return JSON.parse(
-                localStorage.getItem(USERS_KEY)
-            ) || [];
-
-        } catch (e) {
-
-            return [];
-
+    function getClient() {
+        if (client) return client;
+        const config = window.DATE_SPARK_SUPABASE_CONFIG || {};
+        if (!window.supabase || !config.url || !config.anonKey) {
+            initializationError = 'Date Spark is not connected to Supabase yet. Please contact the site owner.';
+            return null;
         }
-    }
-
-
-    function saveUsers(users) {
-
-        localStorage.setItem(
-            USERS_KEY,
-            JSON.stringify(users)
-        );
-
-    }
-
-
-    // ===== ACTIVITY LOG =====
-
-    function getLog() {
-
-        try {
-
-            return JSON.parse(
-                localStorage.getItem(LOG_KEY)
-            ) || [];
-
-        } catch (e) {
-
-            return [];
-
-        }
-    }
-
-
-    function recordActivity(type, email, username) {
-
-        const log = getLog();
-
-        log.push({
-
-            type,
-            email,
-            username,
-            timestamp: Date.now()
-
+        client = window.supabase.createClient(config.url, config.anonKey, {
+            auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
         });
-
-        // Keep only the most recent 500 entries.
-        while (log.length > 500) {
-
-            log.shift();
-
-        }
-
-        localStorage.setItem(
-            LOG_KEY,
-            JSON.stringify(log)
-        );
-
+        return client;
     }
 
-
-    // ===== VALIDATION =====
+    function unavailable() {
+        return { success: false, message: initializationError || 'Authentication service is unavailable. Please try again later.' };
+    }
 
     function normalizeEmail(email) {
-
-        return String(email || '')
-            .trim()
-            .toLowerCase();
-
+        return String(email || '').trim().toLowerCase();
     }
-
 
     function isValidEmail(email) {
-
-        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-
+        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizeEmail(email));
     }
 
-
-    // ===== PASSWORD SECURITY =====
-
-    function randomSalt() {
-
-        const arr = new Uint8Array(16);
-
-        crypto.getRandomValues(arr);
-
-        return Array.from(
-            arr,
-            b => b.toString(16).padStart(2, '0')
-        ).join('');
-
+    function friendlyError(error, fallback) {
+        const message = String(error?.message || '').toLowerCase();
+        if (message.includes('invalid login credentials')) return 'Incorrect email or password.';
+        if (message.includes('already registered') || message.includes('already been registered')) return 'An account with that email already exists.';
+        if (message.includes('email not confirmed')) return 'Please verify your email before signing in.';
+        if (message.includes('network') || message.includes('fetch')) return 'Unable to reach the authentication service. Check your connection and try again.';
+        return fallback;
     }
 
-
-    async function hashPassword(password, salt) {
-
-        const encoder = new TextEncoder();
-
-        const data = encoder.encode(
-            salt + password
-        );
-
-        const digest =
-            await crypto.subtle.digest(
-                'SHA-256',
-                data
-            );
-
-        return Array.from(
-            new Uint8Array(digest),
-            b => b.toString(16).padStart(2, '0')
-        ).join('');
-
+    async function getSessionUser() {
+        const supabase = getClient();
+        if (!supabase) return null;
+        const { data, error } = await supabase.auth.getUser();
+        return error ? null : data.user;
     }
 
+    async function getCurrentProfile() {
+        const supabase = getClient();
+        const user = await getSessionUser();
+        if (!supabase || !user) return null;
+        const { data, error } = await supabase
+            .from('profiles')
+            .select('id, username, email, role, created_at, updated_at')
+            .eq('id', user.id)
+            .maybeSingle();
+        return error ? null : data;
+    }
 
-    // ===== REGISTER =====
+    async function getCurrentUser() {
+        return getCurrentProfile();
+    }
 
-    async function register(
-        username,
-        email,
-        password
-    ) {
+    async function recordActivity(eventType, metadata = {}) {
+        const supabase = getClient();
+        const user = await getSessionUser();
+        if (!supabase || !user) return false;
+        const { error } = await supabase.from('activity_logs').insert({
+            user_id: user.id, event_type: eventType, metadata
+        });
+        return !error;
+    }
 
+    async function register(username, email, password) {
         username = String(username || '').trim();
-
         email = normalizeEmail(email);
+        if (!username) return { success: false, message: 'Please enter a username.' };
+        if (username.length > 50) return { success: false, message: 'Username must be 50 characters or fewer.' };
+        if (!isValidEmail(email)) return { success: false, message: 'Please enter a valid email address.' };
+        if (!password || password.length < 6) return { success: false, message: 'Password must be at least 6 characters.' };
 
-        if (!username) {
-
-            return {
-
-                success: false,
-
-                message:
-                    'Please enter a username.'
-
-            };
-
-        }
-
-
-        if (!isValidEmail(email)) {
-
-            return {
-
-                success: false,
-
-                message:
-                    'Please enter a valid email address.'
-
-            };
-
-        }
-
-
-        if (!password || password.length < 6) {
-
-            return {
-
-                success: false,
-
-                message:
-                    'Password must be at least 6 characters.'
-
-            };
-
-        }
-
-
-        const users = getUsers();
-
-
-        if (
-            users.some(
-                u => u.email === email
-            )
-        ) {
-
-            return {
-
-                success: false,
-
-                message:
-                    'An account with that email already exists.'
-
-            };
-
-        }
-
-
-        const salt = randomSalt();
-
-        const passwordHash =
-            await hashPassword(
-                password,
-                salt
-            );
-
-
-        users.push({
-
-            username,
-
-            email,
-
-            salt,
-
-            passwordHash,
-
-            createdAt: Date.now(),
-
-            loginCount: 0,
-
-            lastLoginAt: null
-
+        const supabase = getClient();
+        if (!supabase) return unavailable();
+        const { data, error } = await supabase.auth.signUp({
+            email, password, options: { data: { username } }
         });
-
-
-        saveUsers(users);
-
-
-        recordActivity(
-            'register',
-            email,
-            username
-        );
-
-
-        createSession(email);
-
-
-        return {
-
-            success: true,
-
-            message:
-                'Account created! Redirecting...'
-
-        };
-
+        if (error) return { success: false, message: friendlyError(error, 'Unable to create your account. Please try again.') };
+        if (!data.session) {
+            return { success: true, requiresVerification: true, message: 'Account created. Please check your email to verify your account before signing in.' };
+        }
+        return { success: true, message: 'Account created! Redirecting...' };
     }
 
-
-    // ===== LOGIN =====
-
-    async function login(
-        email,
-        password
-    ) {
-
+    async function login(email, password) {
         email = normalizeEmail(email);
+        if (!isValidEmail(email)) return { success: false, message: 'Please enter a valid email address.' };
+        if (!password) return { success: false, message: 'Please enter your password.' };
 
-
-        if (!isValidEmail(email)) {
-
-            return {
-
-                success: false,
-
-                message:
-                    'Please enter a valid email address.'
-
-            };
-
-        }
-
-
-        if (!password) {
-
-            return {
-
-                success: false,
-
-                message:
-                    'Please enter your password.'
-
-            };
-
-        }
-
-
-        const users = getUsers();
-
-
-        const user = users.find(
-            u => u.email === email
-        );
-
-
-        if (!user) {
-
-            return {
-
-                success: false,
-
-                message:
-                    'No account found with that email.'
-
-            };
-
-        }
-
-
-        const hash =
-            await hashPassword(
-                password,
-                user.salt
-            );
-
-
-        if (
-            hash !== user.passwordHash
-        ) {
-
-            return {
-
-                success: false,
-
-                message:
-                    'Incorrect email or password.'
-
-            };
-
-        }
-
-
-        // Update login information.
-
-        user.loginCount =
-            Number(user.loginCount || 0) + 1;
-
-        user.lastLoginAt = Date.now();
-
-        saveUsers(users);
-
-
-        createSession(email);
-
-
-        recordActivity(
-            'login',
-            email,
-            user.username
-        );
-
-
-        return {
-
-            success: true,
-
-            message:
-                'Welcome back! Redirecting...'
-
-        };
-
+        const supabase = getClient();
+        if (!supabase) return unavailable();
+        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        if (error) return { success: false, message: friendlyError(error, 'Unable to sign in. Please try again.') };
+        await recordActivity('login');
+        return { success: true, message: 'Welcome back! Redirecting...' };
     }
 
-
-    // ===== USER SESSION =====
-
-    function createSession(email) {
-
-        sessionStorage.setItem(
-            SESSION_KEY,
-            email
-        );
-
+    async function logout() {
+        const supabase = getClient();
+        if (!supabase) return unavailable();
+        await recordActivity('logout');
+        const { error } = await supabase.auth.signOut();
+        return error ? { success: false, message: 'Unable to sign out. Please try again.' } : { success: true };
     }
 
-
-    function logout() {
-
-        sessionStorage.removeItem(
-            SESSION_KEY
-        );
-
+    async function requireAuth(loginPage = 'login.html') {
+        const user = await getCurrentUser();
+        if (!user) window.location.replace(loginPage);
+        return user;
     }
 
+    async function redirectIfAuthed(appPage = 'index.html') {
+        const user = await getCurrentUser();
+        if (user) window.location.replace(appPage);
+        return user;
+    }
 
-    function getCurrentUser() {
+    async function isAdmin() {
+        const profile = await getCurrentProfile();
+        return Boolean(profile && profile.role === 'admin');
+    }
 
-        const email =
-            sessionStorage.getItem(
-                SESSION_KEY
-            );
-
-
-        if (!email) {
-
+    async function requireAdmin(loginPage = '/html/login.html') {
+        const profile = await getCurrentProfile();
+        if (!profile) {
+            window.location.replace(loginPage);
             return null;
-
         }
+        return profile.role === 'admin' ? profile : null;
+    }
 
-
-        const users = getUsers();
-
-
-        const user = users.find(
-            u => u.email === email
-        );
-
-
-        if (!user) {
-
-            return null;
-
-        }
-
-
+    async function getAdminDashboardData() {
+        const supabase = getClient();
+        if (!supabase) throw new Error(unavailable().message);
+        const [profilesResult, activityResult] = await Promise.all([
+            supabase.from('profiles').select('id, username, email, role, created_at').order('created_at', { ascending: false }),
+            supabase.from('activity_logs').select('id, user_id, event_type, email, username, created_at, metadata').order('created_at', { ascending: false }).limit(500)
+        ]);
+        if (profilesResult.error || activityResult.error) throw new Error('Unable to load administrative data.');
+        const activity = activityResult.data;
         return {
-
-            username: user.username,
-
-            email: user.email
-
+            activity,
+            users: profilesResult.data.map(profile => {
+                const logins = activity.filter(event => event.user_id === profile.id && event.event_type === 'login');
+                return { ...profile, loginCount: logins.length, lastLoginAt: logins[0]?.created_at || null };
+            })
         };
-
     }
 
-
-    // ===== AUTH PROTECTION =====
-
-    function requireAuth(
-        loginPage = 'login.html'
-    ) {
-
-        if (!getCurrentUser()) {
-
-            window.location.href =
-                loginPage;
-
-        }
-
+    async function callAdminFunction(action, payload) {
+        const supabase = getClient();
+        if (!supabase) return unavailable();
+        const { data, error } = await supabase.functions.invoke('admin-user-management', { body: { action, ...payload } });
+        if (error || !data?.success) return { success: false, message: data?.message || 'The administrative action could not be completed.' };
+        return data;
     }
-
-
-    function redirectIfAuthed(
-        appPage = 'index.html'
-    ) {
-
-        if (getCurrentUser()) {
-
-            window.location.href =
-                appPage;
-
-        }
-
-    }
-
-
-    // ===== ADMIN =====
-
-    function adminLogin(passcode) {
-
-        if (
-            passcode === ADMIN_PASSCODE
-        ) {
-
-            sessionStorage.setItem(
-                ADMIN_SESSION_KEY,
-                'true'
-            );
-
-            return true;
-
-        }
-
-
-        return false;
-
-    }
-
-
-    function adminLogout() {
-
-        sessionStorage.removeItem(
-            ADMIN_SESSION_KEY
-        );
-
-    }
-
-
-    function isAdminAuthed() {
-
-        return (
-            sessionStorage.getItem(
-                ADMIN_SESSION_KEY
-            ) === 'true'
-        );
-
-    }
-
-
-    // ===== ADMIN USER LIST =====
-
-    function getUsersForAdmin() {
-
-        const log = getLog();
-
-        return getUsers().map(u => {
-
-            const userLog =
-                log.filter(
-                    entry =>
-                        entry.email === u.email
-                );
-
-
-            const lastLogin =
-                userLog
-                    .filter(
-                        e =>
-                            e.type === 'login'
-                    )
-                    .slice(-1)[0];
-
-
-            return {
-
-                username: u.username,
-
-                email: u.email,
-
-                createdAt: u.createdAt,
-
-                loginCount:
-                    userLog.filter(
-                        e =>
-                            e.type === 'login'
-                    ).length,
-
-                lastLoginAt:
-                    lastLogin
-                        ? lastLogin.timestamp
-                        : null
-
-            };
-
-        });
-
-    }
-
-
-    function getActivityLog() {
-
-        return [
-            ...getLog()
-        ].reverse();
-
-    }
-
-
-    // ===== DELETE USER =====
-
-    function deleteUser(email) {
-
-        email =
-            normalizeEmail(email);
-
-
-        const users =
-            getUsers().filter(
-                u =>
-                    u.email !== email
-            );
-
-
-        saveUsers(users);
-
-    }
-
-
-    // ===== TEMPORARY PASSWORD =====
 
     function generateTempPassword() {
-
-        const chars =
-            'ABCDEFGHJKMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
-
-
-        const arr =
-            new Uint8Array(10);
-
-
-        crypto.getRandomValues(arr);
-
-
-        return Array.from(
-            arr,
-            b =>
-                chars[
-                    b % chars.length
-                ]
-        ).join('');
-
+        const chars = 'ABCDEFGHJKMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
+        const values = new Uint8Array(12);
+        crypto.getRandomValues(values);
+        return Array.from(values, value => chars[value % chars.length]).join('');
     }
-
-
-    // ===== ADMIN PASSWORD RESET =====
-
-    async function adminResetPassword(
-        email,
-        newPassword
-    ) {
-
-        email =
-            normalizeEmail(email);
-
-
-        if (
-            !newPassword ||
-            newPassword.length < 6
-        ) {
-
-            return {
-
-                success: false,
-
-                message:
-                    'New password must be at least 6 characters.'
-
-            };
-
-        }
-
-
-        const users = getUsers();
-
-
-        const user =
-            users.find(
-                u =>
-                    u.email === email
-            );
-
-
-        if (!user) {
-
-            return {
-
-                success: false,
-
-                message:
-                    'No account found with that email.'
-
-            };
-
-        }
-
-
-        user.salt =
-            randomSalt();
-
-
-        user.passwordHash =
-            await hashPassword(
-                newPassword,
-                user.salt
-            );
-
-
-        saveUsers(users);
-
-
-        recordActivity(
-            'admin_reset',
-            email,
-            user.username
-        );
-
-
-        return {
-
-            success: true,
-
-            message:
-                'Password reset.'
-
-        };
-
-    }
-
-
-    // ===== PUBLIC API =====
 
     return {
-
-        register,
-
-        login,
-
-        logout,
-
-        getCurrentUser,
-
-        requireAuth,
-
-        redirectIfAuthed,
-
-        isValidEmail,
-
-        adminLogin,
-
-        adminLogout,
-
-        isAdminAuthed,
-
-        getUsersForAdmin,
-
-        getActivityLog,
-
-        deleteUser,
-
-        adminResetPassword,
-
+        register, login, logout, getCurrentUser, getCurrentProfile, requireAuth,
+        redirectIfAuthed, isValidEmail, isAdmin, requireAdmin, recordActivity,
+        getAdminDashboardData, deleteUser: userId => callAdminFunction('delete_user', { userId }),
+        adminResetPassword: (userId, newPassword) => callAdminFunction('reset_password', { userId, newPassword }),
         generateTempPassword
-
     };
-
 })();
-

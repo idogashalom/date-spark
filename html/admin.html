@@ -1,16 +1,9 @@
-```html
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-
-    <meta charset="UTF-8">
-
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
     <!-- Admin CSS -->
     <link rel="stylesheet" href="css/admin.css">
 
@@ -87,7 +80,7 @@
             </h1>
 
 
-            <div style="display: flex; gap: 10px;">
+            <div class="dash-header-actions">
 
                 <!-- Main Date Spark page -->
 
@@ -309,7 +302,7 @@
 
                 <div class="modal-actions">
 
-                    <button type="button" class="btn btn-primary" style="width: auto;" onclick="fillRandomPassword()">
+                    <button type="button" class="btn btn-primary modal-btn-auto" onclick="fillRandomPassword()">
 
                         <i class="fas fa-dice"></i>
 
@@ -320,9 +313,9 @@
                 </div>
 
 
-                <div class="modal-actions" style="margin-top: 15px;">
+                <div class="modal-actions modal-actions-spaced">
 
-                    <button type="button" class="btn btn-primary" style="flex: 1;" onclick="confirmReset()">
+                    <button type="button" class="btn btn-primary modal-btn-grow" onclick="confirmReset()">
 
                         <i class="fas fa-check"></i>
 
@@ -344,7 +337,7 @@
 
             <!-- Reset Result -->
 
-            <div id="resetResult" style="display: none;">
+            <div id="resetResult" class="reset-result">
 
                 <div class="reveal-box" id="revealedPassword"></div>
 
@@ -361,7 +354,7 @@
 
                 <div class="modal-actions">
 
-                    <button type="button" class="btn btn-primary" style="flex: 1;" onclick="copyRevealed()">
+                    <button type="button" class="btn btn-primary modal-btn-grow" onclick="copyRevealed()">
 
                         <i class="fas fa-copy"></i>
 

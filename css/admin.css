@@ -151,6 +151,11 @@
       gap: 15px;
   }
 
+  .dash-header-actions {
+      display: flex;
+      gap: 10px;
+  }
+
   .dash-header h1 {
       color: #1a1a2e;
       display: flex;
@@ -345,4 +350,20 @@
       display: flex;
       gap: 10px;
       flex-wrap: wrap;
+  }
+
+  .modal-actions-spaced {
+      margin-top: 15px;
+  }
+
+  .modal-btn-auto {
+      width: auto;
+  }
+
+  .modal-btn-grow {
+      flex: 1;
+  }
+
+  .reset-result {
+      display: none;
   }

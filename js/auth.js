@@ -1,4 +1,4 @@
-```javascript
+
 /*
     Date Spark auth (client-side only, no backend)
 
@@ -770,4 +770,4 @@ const AUTH = (() => {
     };
 
 })();
-```
+

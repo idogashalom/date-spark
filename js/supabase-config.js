@@ -5,6 +5,7 @@
  * service_role key, database password, or other secret in this file.
  */
 window.DATE_SPARK_SUPABASE_CONFIG = {
-    url: '', // e.g. https://your-project-ref.supabase.co
-    anonKey: '' // starts with "eyJ..." for legacy anon keys or "sb_publishable_..."
+    url: 'YOUR_PROJECT_URL',
+    anonKey: 'YOUR_PUBLISHABLE_OR_ANON_KEY'
+};
 };

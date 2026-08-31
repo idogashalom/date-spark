@@ -56,7 +56,7 @@
                             Forgot Password
                         </button>
 
-                        <a href="register.html">Sign-up</a>
+                        <a href="html/register.html">Sign-up</a>
                     </div>
 
                 </form>
@@ -69,12 +69,12 @@
         follow you to another device.
     </p>
 
-    <!-- auth.js is in the ../js folder -->
-    <script src="../js/auth.js"></script>
+    <!-- auth.js is in the ./js folder -->
+    <script src="/js/auth.js"></script>
 
     <script>
         // If the user is already logged in, send them to the main Date Spark page.
-        AUTH.redirectIfAuthed('../index.html');
+        AUTH.redirectIfAuthed('/index.html');
 
         const form = document.getElementById('loginForm');
         const message = document.getElementById('loginMessage');
@@ -98,7 +98,7 @@
 
                 // Go back to the main Date Spark page.
                 setTimeout(() => {
-                    window.location.href = '../index.html';
+                    window.location.href = '/index.html';
                 }, 500);
 
             } else {

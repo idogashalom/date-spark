@@ -1,230 +1,379 @@
+```html
 <!DOCTYPE html>
 <html lang="en">
 
 <head>
+
     <meta charset="UTF-8">
+
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="../css/admin.css">
+
+    <!-- Admin CSS -->
+    <link rel="stylesheet" href="css/admin.css">
+
     <title>Admin - Date Spark</title>
+
 </head>
 
+
 <body>
-    <!-- ===== PASSCODE GATE ===== -->
+
+    <!-- ==============================
+         PASSCODE GATE
+    =============================== -->
+
     <div class="gate" id="gateScreen">
+
         <div class="gate-box">
-            <div class="brand-icon"><i class="fas fa-user-shield"></i></div>
+
+            <div class="brand-icon">
+
+                <i class="fas fa-user-shield"></i>
+
+            </div>
+
+
             <h1>Admin Access</h1>
-            <p>Enter the admin passcode to view registered users and login activity.</p>
+
+
+            <p>
+                Enter the admin passcode to view
+                registered users and login activity.
+            </p>
+
 
             <form id="gateForm">
-                <input
-                    type="password"
-                    id="passcodeInput"
-                    placeholder="Admin passcode"
-                    autocomplete="off"
-                    required
-                >
+
+                <input type="password" id="passcodeInput" placeholder="Admin passcode" autocomplete="off" required>
+
 
                 <p class="error-msg" id="gateError"></p>
 
+
                 <button type="submit" class="btn btn-primary">
-                    <i class="fas fa-unlock"></i> Enter
+
+                    <i class="fas fa-unlock"></i>
+
+                    Enter
+
                 </button>
+
             </form>
+
         </div>
+
     </div>
 
-    <!-- ===== DASHBOARD ===== -->
+
+    <!-- ==============================
+         ADMIN DASHBOARD
+    =============================== -->
+
     <div class="dash-wrap" id="dashWrap">
 
+        <!-- Header -->
+
         <div class="dash-header">
+
             <h1>
+
                 <i class="fas fa-user-shield"></i>
+
                 Date Spark Admin
+
             </h1>
+
 
             <div style="display: flex; gap: 10px;">
 
-                <!-- Main Date Spark page is now index.html -->
-                <a href="/index.html" class="btn btn-outline">
-                    <i class="fas fa-heart"></i> Back to app
+                <!-- Main Date Spark page -->
+
+                <a href="index.html" class="btn btn-outline">
+
+                    <i class="fas fa-heart"></i>
+
+                    Back to app
+
                 </a>
 
-                <button
-                    class="btn btn-outline"
-                    onclick="doAdminLogout()"
-                >
+
+                <button type="button" class="btn btn-outline" onclick="doAdminLogout()">
+
                     <i class="fas fa-sign-out-alt"></i>
+
                     Logout
+
                 </button>
 
             </div>
+
         </div>
+
+
+        <!-- Statistics -->
 
         <div class="stats-row">
 
             <div class="stat-card">
-                <div class="stat-num" id="statUsers">0</div>
-                <div class="stat-label">Registered users</div>
+
+                <div class="stat-num" id="statUsers">
+                    0
+                </div>
+
+
+                <div class="stat-label">
+                    Registered users
+                </div>
+
             </div>
 
-            <div class="stat-card">
-                <div class="stat-num" id="statLogins">0</div>
-                <div class="stat-label">Total logins recorded</div>
-            </div>
 
             <div class="stat-card">
-                <div class="stat-num" id="statToday">0</div>
-                <div class="stat-label">Sign-ins today</div>
+
+                <div class="stat-num" id="statLogins">
+                    0
+                </div>
+
+
+                <div class="stat-label">
+                    Total logins recorded
+                </div>
+
+            </div>
+
+
+            <div class="stat-card">
+
+                <div class="stat-num" id="statToday">
+                    0
+                </div>
+
+
+                <div class="stat-label">
+                    Sign-ins today
+                </div>
+
             </div>
 
         </div>
 
+
+        <!-- ==============================
+             REGISTERED USERS
+        =============================== -->
+
         <div class="panel">
 
             <h2>
+
                 <i class="fas fa-users"></i>
+
                 Registered Users
+
             </h2>
 
-            <table>
 
-                <thead>
-                    <tr>
-                        <th>Username</th>
-                        <th>Email</th>
-                        <th>Registered On</th>
-                        <th>Total Logins</th>
-                        <th>Last Login</th>
-                        <th></th>
-                    </tr>
-                </thead>
+            <div class="table-wrapper">
 
-                <tbody id="usersTableBody"></tbody>
+                <table>
 
-            </table>
+                    <thead>
+
+                        <tr>
+
+                            <th>
+                                Username
+                            </th>
+
+                            <th>
+                                Email
+                            </th>
+
+                            <th>
+                                Registered On
+                            </th>
+
+                            <th>
+                                Total Logins
+                            </th>
+
+                            <th>
+                                Last Login
+                            </th>
+
+                            <th>
+                                Actions
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody id="usersTableBody"></tbody>
+
+                </table>
+
+            </div>
 
         </div>
+
+
+        <!-- ==============================
+             ACTIVITY LOG
+        =============================== -->
 
         <div class="panel">
 
             <h2>
+
                 <i class="fas fa-clock-rotate-left"></i>
-                Recent Activity (proof of registration &amp; login)
+
+                Recent Activity
+
             </h2>
 
-            <table>
 
-                <thead>
-                    <tr>
-                        <th>Event</th>
-                        <th>Username</th>
-                        <th>Email</th>
-                        <th>Timestamp</th>
-                    </tr>
-                </thead>
+            <div class="table-wrapper">
 
-                <tbody id="logTableBody"></tbody>
+                <table>
 
-            </table>
+                    <thead>
+
+                        <tr>
+
+                            <th>
+                                Event
+                            </th>
+
+                            <th>
+                                Username
+                            </th>
+
+                            <th>
+                                Email
+                            </th>
+
+                            <th>
+                                Timestamp
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody id="logTableBody"></tbody>
+
+                </table>
+
+            </div>
 
         </div>
 
     </div>
 
-    <!-- ===== RESET PASSWORD MODAL ===== -->
+
+    <!-- ==============================
+         RESET PASSWORD MODAL
+    =============================== -->
 
     <div class="modal-overlay" id="resetModal">
 
         <div class="modal-box">
 
             <h2>
+
                 <i class="fas fa-key"></i>
-                Reset password
+
+                Reset Password
+
             </h2>
 
+
             <p id="resetIntro">
-                Set a new temporary password for this user.
-                Send it to them yourself (text, call, in person) -
-                there's no email server to do it automatically.
+
+                Set a new temporary password
+                for this user.
+
             </p>
+
 
             <div id="resetForm">
 
-                <input
-                    type="text"
-                    id="newPasswordInput"
-                    placeholder="New temporary password"
-                    autocomplete="off"
-                >
+                <input type="text" id="newPasswordInput" placeholder="New temporary password" autocomplete="off">
+
 
                 <div class="modal-actions">
 
-                    <button class="btn btn-primary"
-                        style="width:auto;"
-                        onclick="fillRandomPassword()"
-                    >
+                    <button type="button" class="btn btn-primary" style="width: auto;" onclick="fillRandomPassword()">
+
                         <i class="fas fa-dice"></i>
+
                         Generate random
+
                     </button>
 
                 </div>
 
-                <div
-                    class="modal-actions"
-                    style="margin-top: 15px;"
-                >
 
-                    <button
-                        class="btn btn-primary"
-                        style="flex:1;"
-                        onclick="confirmReset()"
-                    >
+                <div class="modal-actions" style="margin-top: 15px;">
+
+                    <button type="button" class="btn btn-primary" style="flex: 1;" onclick="confirmReset()">
+
                         <i class="fas fa-check"></i>
+
                         Set password
+
                     </button>
 
-                    <button
-                        class="btn btn-outline"
-                        onclick="closeResetModal()"
-                    >
+
+                    <button type="button" class="btn btn-outline" onclick="closeResetModal()">
+
                         Cancel
+
                     </button>
 
                 </div>
 
             </div>
 
-            <div id="resetResult" style="display:none;">
 
-                <div
-                    class="reveal-box"
-                    id="revealedPassword"
-                ></div>
+            <!-- Reset Result -->
+
+            <div id="resetResult" style="display: none;">
+
+                <div class="reveal-box" id="revealedPassword"></div>
+
 
                 <p>
+
                     Copy this now — it won't be shown again.
-                    Send it to the user and ask them to change it
-                    after logging in.
+
+                    Send it to the user and ask them
+                    to change it after logging in.
+
                 </p>
+
 
                 <div class="modal-actions">
 
-                    <button
-                        class="btn btn-primary"
-                        style="flex:1;"
-                        onclick="copyRevealed()"
-                    >
+                    <button type="button" class="btn btn-primary" style="flex: 1;" onclick="copyRevealed()">
+
                         <i class="fas fa-copy"></i>
+
                         Copy
+
                     </button>
 
-                    <button
-                        class="btn btn-outline"
-                        onclick="closeResetModal()"
-                    >
+
+                    <button type="button" class="btn btn-outline" onclick="closeResetModal()">
+
                         Done
+
                     </button>
 
                 </div>
@@ -235,45 +384,105 @@
 
     </div>
 
-    <script src="/js/auth.js"></script>
+
+    <!-- ==============================
+         AUTH JAVASCRIPT
+    =============================== -->
+
+    <script src="js/auth.js"></script>
+
+
+    <!-- ==============================
+         ADMIN JAVASCRIPT
+    =============================== -->
 
     <script>
 
-        const gateScreen = document.getElementById('gateScreen');
-        const dashWrap = document.getElementById('dashWrap');
+        const gateScreen =
+            document.getElementById('gateScreen');
+
+        const dashWrap =
+            document.getElementById('dashWrap');
+
+
+        // ==========================================
+        // SHOW DASHBOARD
+        // ==========================================
 
         function showDashboard() {
+
             gateScreen.style.display = 'none';
+
             dashWrap.classList.add('open');
+
             renderDashboard();
+
         }
 
-        // If already unlocked this session, skip the passcode screen.
+
+        // ==========================================
+        // CHECK EXISTING ADMIN SESSION
+        // ==========================================
+
         if (AUTH.isAdminAuthed()) {
+
             showDashboard();
+
         }
 
-        document.getElementById('gateForm').addEventListener('submit', (e) => {
 
-            e.preventDefault();
+        // ==========================================
+        // ADMIN LOGIN
+        // ==========================================
 
-            const passcode =
-                document.getElementById('passcodeInput').value;
+        document
+            .getElementById('gateForm')
+            .addEventListener(
+                'submit',
+                (e) => {
 
-            const errorMsg =
-                document.getElementById('gateError');
+                    e.preventDefault();
 
-            if (AUTH.adminLogin(passcode)) {
 
-                errorMsg.textContent = '';
-                showDashboard();
+                    const passcode =
+                        document
+                            .getElementById(
+                                'passcodeInput'
+                            )
+                            .value;
 
-            } else {
 
-                errorMsg.textContent = 'Incorrect passcode.';
+                    const errorMsg =
+                        document
+                            .getElementById(
+                                'gateError'
+                            );
 
-            }
-        });
+
+                    if (
+                        AUTH.adminLogin(
+                            passcode
+                        )
+                    ) {
+
+                        errorMsg.textContent = '';
+
+                        showDashboard();
+
+                    } else {
+
+                        errorMsg.textContent =
+                            'Incorrect passcode.';
+
+                    }
+
+                }
+            );
+
+
+        // ==========================================
+        // ADMIN LOGOUT
+        // ==========================================
 
         function doAdminLogout() {
 
@@ -283,208 +492,438 @@
 
             gateScreen.style.display = 'flex';
 
-            document.getElementById('passcodeInput').value = '';
+            document
+                .getElementById(
+                    'passcodeInput'
+                )
+                .value = '';
+
         }
+
+
+        // ==========================================
+        // FORMAT DATE
+        // ==========================================
 
         function formatDate(ts) {
 
-            if (!ts) return '—';
+            if (!ts) {
 
-            return new Date(ts).toLocaleString(undefined, {
-                year: 'numeric',
-                month: 'short',
-                day: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit'
-            });
+                return '—';
+
+            }
+
+
+            return new Date(ts)
+                .toLocaleString(
+                    undefined,
+                    {
+
+                        year: 'numeric',
+
+                        month: 'short',
+
+                        day: 'numeric',
+
+                        hour: '2-digit',
+
+                        minute: '2-digit'
+
+                    }
+                );
+
         }
+
+
+        // ==========================================
+        // RENDER DASHBOARD
+        // ==========================================
 
         function renderDashboard() {
 
-            const users = AUTH.getUsersForAdmin();
-            const log = AUTH.getActivityLog();
+            const users =
+                AUTH.getUsersForAdmin();
 
-            document.getElementById('statUsers').textContent =
+
+            const log =
+                AUTH.getActivityLog();
+
+
+            // Registered users
+
+            document
+                .getElementById(
+                    'statUsers'
+                )
+                .textContent =
                 users.length;
 
-            document.getElementById('statLogins').textContent =
-                log.filter(e => e.type === 'login').length;
 
-            const startOfToday = new Date();
+            // Total logins
 
-            startOfToday.setHours(0, 0, 0, 0);
+            document
+                .getElementById(
+                    'statLogins'
+                )
+                .textContent =
+                log.filter(
+                    e =>
+                        e.type === 'login'
+                ).length;
 
-            document.getElementById('statToday').textContent =
+
+            // Sign-ins today
+
+            const startOfToday =
+                new Date();
+
+
+            startOfToday.setHours(
+                0,
+                0,
+                0,
+                0
+            );
+
+
+            document
+                .getElementById(
+                    'statToday'
+                )
+                .textContent =
                 log.filter(
                     e =>
                         e.type === 'login' &&
-                        e.timestamp >= startOfToday.getTime()
+                        e.timestamp >=
+                        startOfToday.getTime()
                 ).length;
 
+
+            // ======================================
+            // USERS TABLE
+            // ======================================
+
             const usersBody =
-                document.getElementById('usersTableBody');
+                document.getElementById(
+                    'usersTableBody'
+                );
+
 
             if (users.length === 0) {
 
                 usersBody.innerHTML = `
+
                     <tr class="empty-row">
+
                         <td colspan="6">
-                            No accounts registered on this browser yet.
+
+                            No accounts registered
+                            on this browser yet.
+
                         </td>
+
                     </tr>
+
                 `;
 
             } else {
 
-                usersBody.innerHTML = users.map(u => `
-                    <tr>
-                        <td>${escapeHtml(u.username)}</td>
-                        <td>${escapeHtml(u.email)}</td>
-                        <td>${formatDate(u.createdAt)}</td>
-                        <td>${u.loginCount}</td>
-                        <td>${formatDate(u.lastLoginAt)}</td>
+                usersBody.innerHTML =
+                    users
+                        .map(
+                            u => `
 
-                        <td class="row-actions">
+                                <tr>
 
-                            <button
-                                class="btn btn-reset"
-                                onclick="openResetModal(
-                                    '${escapeHtml(u.email)}',
-                                    '${escapeHtml(u.username)}'
-                                )"
-                            >
-                                <i class="fas fa-key"></i>
-                            </button>
+                                    <td>
+                                        ${escapeHtml(u.username)}
+                                    </td>
 
-                            <button
-                                class="btn btn-danger"
-                                onclick="handleDelete(
-                                    '${escapeHtml(u.email)}'
-                                )"
-                            >
-                                <i class="fas fa-trash"></i>
-                            </button>
+                                    <td>
+                                        ${escapeHtml(u.email)}
+                                    </td>
 
-                        </td>
-                    </tr>
-                `).join('');
+                                    <td>
+                                        ${formatDate(u.createdAt)}
+                                    </td>
+
+                                    <td>
+                                        ${u.loginCount}
+                                    </td>
+
+                                    <td>
+                                        ${formatDate(u.lastLoginAt)}
+                                    </td>
+
+                                    <td class="row-actions">
+
+                                        <button
+                                            type="button"
+                                            class="btn btn-reset"
+                                            title="Reset password"
+                                            onclick="openResetModal(
+                                                '${escapeJs(u.email)}',
+                                                '${escapeJs(u.username)}'
+                                            )"
+                                        >
+
+                                            <i class="fas fa-key"></i>
+
+                                        </button>
+
+
+                                        <button
+                                            type="button"
+                                            class="btn btn-danger"
+                                            title="Delete user"
+                                            onclick="handleDelete(
+                                                '${escapeJs(u.email)}'
+                                            )"
+                                        >
+
+                                            <i class="fas fa-trash"></i>
+
+                                        </button>
+
+                                    </td>
+
+                                </tr>
+
+                            `
+                        )
+                        .join('');
+
             }
 
+
+            // ======================================
+            // ACTIVITY LOG TABLE
+            // ======================================
+
             const logBody =
-                document.getElementById('logTableBody');
+                document.getElementById(
+                    'logTableBody'
+                );
+
 
             if (log.length === 0) {
 
                 logBody.innerHTML = `
+
                     <tr class="empty-row">
+
                         <td colspan="4">
+
                             No activity recorded yet.
+
                         </td>
+
                     </tr>
+
                 `;
 
             } else {
 
-                logBody.innerHTML = log
-                    .slice(0, 100)
-                    .map(entry => `
-                        <tr>
-                            <td>
-                                <span class="badge badge-${entry.type}">
-                                    ${eventLabel(entry.type)}
-                                </span>
-                            </td>
+                logBody.innerHTML =
+                    log
+                        .slice(0, 100)
+                        .map(
+                            entry => `
 
-                            <td>
-                                ${escapeHtml(entry.username || '—')}
-                            </td>
+                                <tr>
 
-                            <td>
-                                ${escapeHtml(entry.email)}
-                            </td>
+                                    <td>
 
-                            <td>
-                                ${formatDate(entry.timestamp)}
-                            </td>
-                        </tr>
-                    `)
-                    .join('');
+                                        <span
+                                            class="badge badge-${escapeHtml(entry.type)}"
+                                        >
+
+                                            ${eventLabel(entry.type)}
+
+                                        </span>
+
+                                    </td>
+
+
+                                    <td>
+                                        ${escapeHtml(
+                                entry.username || '—'
+                            )}
+                                    </td>
+
+
+                                    <td>
+                                        ${escapeHtml(
+                                entry.email
+                            )}
+                                    </td>
+
+
+                                    <td>
+                                        ${formatDate(
+                                entry.timestamp
+                            )}
+                                    </td>
+
+                                </tr>
+
+                            `
+                        )
+                        .join('');
+
             }
+
         }
+
+
+        // ==========================================
+        // EVENT LABEL
+        // ==========================================
 
         function eventLabel(type) {
 
             if (type === 'register') {
+
                 return 'Registered';
+
             }
+
 
             if (type === 'admin_reset') {
+
                 return 'Password Reset';
+
             }
 
+
             return 'Login';
+
         }
+
+
+        // ==========================================
+        // DELETE USER
+        // ==========================================
 
         function handleDelete(email) {
 
-            if (!confirm(
-                `Remove the account for ${email}? This can't be undone.`
-            )) {
+            if (
+                !confirm(
+                    `Remove the account for ${email}? This can't be undone.`
+                )
+            ) {
+
                 return;
+
             }
+
 
             AUTH.deleteUser(email);
 
             renderDashboard();
+
         }
 
-        // ===== RESET PASSWORD MODAL =====
+
+        // ==========================================
+        // RESET PASSWORD
+        // ==========================================
 
         let resetTargetEmail = null;
 
-        function openResetModal(email, username) {
+
+        function openResetModal(
+            email,
+            username
+        ) {
 
             resetTargetEmail = email;
 
-            document.getElementById('resetIntro').textContent =
-                `Set a new temporary password for ${username} (${email}). ` +
-                `Send it to them yourself - there's no email server ` +
-                `to do it automatically.`;
-
-            document.getElementById('newPasswordInput').value = '';
-
-            document.getElementById('resetForm').style.display = 'block';
-
-            document.getElementById('resetResult').style.display = 'none';
 
             document
-                .getElementById('resetModal')
+                .getElementById(
+                    'resetIntro'
+                )
+                .textContent =
+                `Set a new temporary password for ${username} (${email}). Send it to them yourself - there's no email server to do it automatically.`;
+
+
+            document
+                .getElementById(
+                    'newPasswordInput'
+                )
+                .value = '';
+
+
+            document
+                .getElementById(
+                    'resetForm'
+                )
+                .style.display =
+                'block';
+
+
+            document
+                .getElementById(
+                    'resetResult'
+                )
+                .style.display =
+                'none';
+
+
+            document
+                .getElementById(
+                    'resetModal'
+                )
                 .classList
                 .add('open');
+
         }
+
 
         function closeResetModal() {
 
             document
-                .getElementById('resetModal')
+                .getElementById(
+                    'resetModal'
+                )
                 .classList
                 .remove('open');
 
+
             resetTargetEmail = null;
+
         }
+
 
         function fillRandomPassword() {
 
-            document.getElementById('newPasswordInput').value =
+            document
+                .getElementById(
+                    'newPasswordInput'
+                )
+                .value =
                 AUTH.generateTempPassword();
+
         }
+
 
         async function confirmReset() {
 
             const newPassword =
-                document.getElementById('newPasswordInput').value;
+                document
+                    .getElementById(
+                        'newPasswordInput'
+                    )
+                    .value;
 
-            if (!resetTargetEmail) return;
+
+            if (!resetTargetEmail) {
+
+                return;
+
+            }
+
 
             const result =
                 await AUTH.adminResetPassword(
@@ -492,45 +931,137 @@
                     newPassword
                 );
 
+
             if (!result.success) {
 
                 alert(result.message);
 
                 return;
+
             }
 
-            document.getElementById('resetForm').style.display =
+
+            document
+                .getElementById(
+                    'resetForm'
+                )
+                .style.display =
                 'none';
 
-            document.getElementById('resetResult').style.display =
+
+            document
+                .getElementById(
+                    'resetResult'
+                )
+                .style.display =
                 'block';
 
-            document.getElementById('revealedPassword').textContent =
+
+            document
+                .getElementById(
+                    'revealedPassword'
+                )
+                .textContent =
                 newPassword;
 
+
             renderDashboard();
+
         }
+
+
+        // ==========================================
+        // COPY PASSWORD
+        // ==========================================
 
         function copyRevealed() {
 
             const text =
-                document.getElementById('revealedPassword').textContent;
+                document
+                    .getElementById(
+                        'revealedPassword'
+                    )
+                    .textContent;
 
-            navigator.clipboard
-                .writeText(text)
-                .then(() => {
-                    alert('Copied to clipboard.');
-                })
-                .catch(() => {});
+
+            if (
+                navigator.clipboard &&
+                navigator.clipboard.writeText
+            ) {
+
+                navigator.clipboard
+                    .writeText(text)
+                    .then(() => {
+
+                        alert(
+                            'Copied to clipboard.'
+                        );
+
+                    })
+                    .catch(() => {
+
+                        alert(
+                            'Unable to copy automatically. Please copy the password manually.'
+                        );
+
+                    });
+
+            } else {
+
+                alert(
+                    'Clipboard access is not available. Please copy the password manually.'
+                );
+
+            }
+
         }
+
+
+        // ==========================================
+        // ESCAPE HTML
+        // ==========================================
 
         function escapeHtml(str) {
 
-            const div = document.createElement('div');
+            const div =
+                document.createElement(
+                    'div'
+                );
 
-            div.textContent = str || '';
+
+            div.textContent =
+                str || '';
+
 
             return div.innerHTML;
+
+        }
+
+
+        // ==========================================
+        // ESCAPE JAVASCRIPT STRING
+        // ==========================================
+
+        function escapeJs(str) {
+
+            return String(str || '')
+                .replace(
+                    /\\/g,
+                    '\\\\'
+                )
+                .replace(
+                    /'/g,
+                    "\\'"
+                )
+                .replace(
+                    /\r/g,
+                    '\\r'
+                )
+                .replace(
+                    /\n/g,
+                    '\\n'
+                );
+
         }
 
     </script>

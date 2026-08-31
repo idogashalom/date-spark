@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Date Spark - Dating Questions</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="/css/index.css">
+    <link rel="stylesheet" href="css/index.css">
 </head>
 
 <body>
@@ -172,7 +172,7 @@
     </div>
 
     <!-- ===== JAVASCRIPT ===== -->
-    <script src="/js/auth.js"></script>
+    <script src="js/auth.js"></script>
     <script>
         // ===== QUESTION BANK =====
         // Curated, de-duplicated question sets per category (no filler/junk variants).
@@ -757,7 +757,7 @@
             textarea.remove();
         }
 
-        function shareQuestion() {
+        function shareQuestionLegacy() {
             const question = filteredQuestions[currentQuestionIndex];
             if (!question) return;
 
@@ -783,7 +783,10 @@
 
         document.querySelectorAll('.modal-overlay').forEach(overlay => {
             overlay.addEventListener('click', (e) => {
-                if (e.target === overlay) overlay.classList.remove('open');
+                if (e.target === overlay) {
+                    if (overlay.id === 'specialsModal') stopCharadesTimer();
+                    overlay.classList.remove('open');
+                }
             });
         });
 
@@ -828,10 +831,34 @@
         function getQuestionPayload() { const q = filteredQuestions[currentQuestionIndex]; return q && { title: 'Date Spark Question', label: (categoryMap[q.category] || {}).label || q.category, text: q.text }; }
         function openShare(payload) { sharePayload = payload || getQuestionPayload(); if (!sharePayload) return; openModal('shareModal'); }
         function shareQuestion() { openShare(); }
+        function openTextFallback(text) {
+            const encoded = encodeURIComponent(text);
+            const isMobile = /Android|iPhone|iPad|iPod|Windows Phone/i.test(navigator.userAgent);
+            const fallbackUrl = isMobile ? `sms:?&body=${encoded}` : `https://wa.me/?text=${encoded}`;
+            const popup = window.open(fallbackUrl, '_blank');
+
+            if (popup) {
+                popup.opener = null;
+                showToast(isMobile ? 'Opening text message...' : 'Opening WhatsApp...', 'info');
+                return;
+            }
+
+            fallbackCopy(text);
+        }
+
         function shareText(payload = sharePayload || getQuestionPayload()) {
-            if (!payload) return; const text = `${payload.title}\n\n${payload.text}\n\n— Date Spark`;
-            if (navigator.share) navigator.share({ title: payload.title, text }).then(() => showToast('Shared successfully! 💌')).catch(() => {});
-            else if (navigator.clipboard) navigator.clipboard.writeText(text).then(() => showToast('Copied to clipboard! 📋')).catch(() => fallbackCopy(text)); else fallbackCopy(text);
+            if (!payload) return;
+
+            const text = `${payload.title}\n\n${payload.text}\n\n— Date Spark`;
+
+            if (navigator.share) {
+                navigator.share({ title: payload.title, text })
+                    .then(() => showToast('Shared successfully! 💌'))
+                    .catch(() => openTextFallback(text));
+                return;
+            }
+
+            openTextFallback(text);
         }
         function wrapCanvasText(ctx, text, maxWidth) { const words = text.split(/\s+/), lines = []; let line = ''; words.forEach(word => { const test = line ? `${line} ${word}` : word; if (ctx.measureText(test).width > maxWidth && line) { lines.push(line); line = word; } else line = test; }); if (line) lines.push(line); return lines; }
         function makeShareCanvas(payload) {
@@ -844,7 +871,7 @@
         }
         async function shareImage(payload = sharePayload || getQuestionPayload(), downloadOnly = false) {
             if (!payload) return; const canvas = makeShareCanvas(payload); canvas.toBlob(async blob => { if (!blob) return; const file = new File([blob], 'date-spark-question.png', { type: 'image/png' });
-                try { if (!downloadOnly && navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) { await navigator.share({ title: payload.title, files: [file] }); showToast('Image shared!'); return; } } catch (_) { return; }
+                try { if (!downloadOnly && navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) { await navigator.share({ title: payload.title, files: [file] }); showToast('Image shared!'); return; } } catch (_) { showToast('Image share was unavailable; downloading instead.', 'info'); }
                 const url = URL.createObjectURL(blob), link = document.createElement('a'); link.href = url; link.download = 'date-spark-question.png'; link.click(); setTimeout(() => URL.revokeObjectURL(url), 1000); showToast('Image downloaded!');
             }, 'image/png');
         }
@@ -869,15 +896,145 @@
             const content = document.getElementById('gameContent'); gameState.type = type;
             const titles = { truth: 'Truth or Dare', wyr: 'Would You Rather', nhie: 'Never Have I Ever' };
             if (type === 'charades') return renderCharades(); if (type === 'anonymous') return renderAnonymous();
-            if (!prompt) prompt = pickBank(type === 'truth' ? 'truth' : type);
+            if (!prompt) {
+                const bank = type === 'truth' ?
+                    (gameState.mode === 'random' ? (Math.random() < .5 ? 'truth' : 'dare') : gameState.mode || 'truth') :
+                    type;
+                prompt = pickBank(bank);
+            }
+            gameState.prompt = prompt;
             const body = type === 'wyr' ? (() => { const [a,b] = prompt.split('|'); return `<div class="choice-pair"><button class="choice-btn" data-choice="A"><b>A</b>${escapeHtml(a)}</button><span>or</span><button class="choice-btn" data-choice="B"><b>B</b>${escapeHtml(b)}</button></div>`; })() : `<p class="game-prompt">${escapeHtml(prompt)}</p>${type === 'nhie' ? '<div class="choice-pair compact"><button class="choice-btn" data-choice="Have">I have</button><button class="choice-btn" data-choice="Never">Never</button></div>' : ''}`;
-            content.innerHTML = `<span class="game-kicker">SPECIALS</span><h2 id="gameTitle">${titles[type]}</h2>${type === 'truth' ? '<div class="mode-switch"><button data-mode="truth" class="active">Truth</button><button data-mode="dare">Dare</button><button data-mode="random">Random</button></div>' : ''}${body}${gameActions()}`;
+            const modeControls = type === 'truth' ?
+                `<div class="mode-switch">
+                    <button data-mode="truth" class="${gameState.mode === 'truth' ? 'active' : ''}">Truth</button>
+                    <button data-mode="dare" class="${gameState.mode === 'dare' ? 'active' : ''}">Dare</button>
+                    <button data-mode="random" class="${gameState.mode === 'random' ? 'active' : ''}">Random</button>
+                </div>` :
+                '';
+
+            content.innerHTML = `<span class="game-kicker">SPECIALS</span><h2 id="gameTitle">${titles[type]}</h2>${modeControls}${body}${gameActions()}`;
         }
         function renderCharades() { const c = gameState.charades, words = specialBanks.charades[c.category], word = words[c.wordIndex % words.length]; document.getElementById('gameContent').innerHTML = `<span class="game-kicker">SPECIALS</span><h2 id="gameTitle">Charades</h2><div class="category-tabs">${Object.keys(specialBanks.charades).map(x => `<button data-category="${x}" class="${x === c.category ? 'active' : ''}">${x}</button>`).join('')}</div><div class="timer-ring"><strong>${c.seconds}</strong><span>seconds</span></div><p class="game-prompt charade-word">${escapeHtml(word)}</p><p class="scoreline">Score: <b>${c.score}</b></p><div class="game-actions"><button class="btn btn-success" data-game-action="correct">Correct +1</button><button class="btn btn-outline" data-game-action="skip">Skip</button><button class="btn btn-primary" data-game-action="start">${c.timer ? 'Running…' : 'Start 60s'}</button><button class="action-btn" data-game-action="reset">Reset</button></div>`; }
         function renderAnonymous() { const inbox = safeParse(localStorage.getItem('dateSparkAnonymousInbox'), []); document.getElementById('gameContent').innerHTML = `<span class="game-kicker">SPECIALS</span><h2 id="gameTitle">Anonymous Note</h2><p class="disclosure"><i class="fas fa-circle-info"></i> Demo only: notes and replies stay in this browser. This is not an anonymous service.</p><label class="field-label">Create a prompt<input id="anonymousPrompt" maxlength="180" placeholder="What made you smile today?"></label><div class="game-actions"><button class="btn btn-primary" data-game-action="create-note">Create link</button></div><div id="noteLink" class="link-display" hidden></div><label class="field-label">Add a demo response<input id="anonymousReply" maxlength="240" placeholder="Write a kind reply…"></label><div class="game-actions"><button class="btn btn-secondary" data-game-action="save-reply">Save reply</button><button class="action-btn" data-game-action="clear-inbox">Clear inbox</button></div><h3 class="inbox-title">Local inbox (${inbox.length})</h3><div class="inbox">${inbox.length ? inbox.map((x,i) => `<div><b>${escapeHtml(x.prompt)}</b><p>${escapeHtml(x.reply)}</p><button data-delete-note="${i}" aria-label="Delete reply"><i class="fas fa-trash"></i></button></div>`).join('') : '<p>No responses yet — your demo inbox is ready.</p>'}</div>`; }
-        function openSpecial(game) { gameState.history = []; gameState.index = -1; if (game === 'truthDare') renderGame('truth'); else renderGame(game); openModal('specialsModal'); }
+        function openSpecial(game) {
+            stopCharadesTimer();
+            gameState.history = [];
+            gameState.index = -1;
+            gameState.mode = game === 'truthDare' ? 'truth' : null;
+            if (game === 'truthDare') renderGame('truth'); else renderGame(game);
+            openModal('specialsModal');
+        }
+
+        function getGamePayload() {
+            const titles = { truth: 'Truth or Dare', wyr: 'Would You Rather', nhie: 'Never Have I Ever', charades: 'Date Spark Charades' };
+            const prompt = gameState.type === 'charades'
+                ? specialBanks.charades[gameState.charades.category][gameState.charades.wordIndex % specialBanks.charades[gameState.charades.category].length]
+                : gameState.prompt;
+            return prompt ? { title: titles[gameState.type] || 'Date Spark Special', label: 'Date Spark Specials', text: prompt.replace('|', ' OR ') } : null;
+        }
+
+        function stopCharadesTimer() {
+            if (gameState.charades.timer) {
+                clearInterval(gameState.charades.timer);
+                gameState.charades.timer = null;
+            }
+        }
+
+        function nextCharade(scored) {
+            if (scored) gameState.charades.score += 1;
+            gameState.charades.wordIndex += 1;
+            renderCharades();
+        }
+
+        function startCharades() {
+            if (gameState.charades.timer) return;
+            if (gameState.charades.seconds < 1) gameState.charades.seconds = 60;
+            gameState.charades.timer = setInterval(() => {
+                gameState.charades.seconds -= 1;
+                if (gameState.charades.seconds <= 0) {
+                    gameState.charades.seconds = 0;
+                    stopCharadesTimer();
+                    showToast('Time is up! Final score: ' + gameState.charades.score, 'info');
+                }
+                renderCharades();
+            }, 1000);
+            renderCharades();
+        }
+
+        function saveAnonymousReply() {
+            const promptInput = document.getElementById('anonymousPrompt');
+            const replyInput = document.getElementById('anonymousReply');
+            const prompt = String(promptInput?.value || '').trim();
+            const reply = String(replyInput?.value || '').trim();
+            if (!prompt || !reply) return showToast('Write both a prompt and a reply first.', 'error');
+            const inbox = safeParse(localStorage.getItem('dateSparkAnonymousInbox'), []);
+            inbox.unshift({ prompt: prompt.slice(0, 180), reply: reply.slice(0, 240), createdAt: Date.now() });
+            localStorage.setItem('dateSparkAnonymousInbox', JSON.stringify(inbox.slice(0, 50)));
+            renderAnonymous();
+            showToast('Saved only in this browser.', 'success');
+        }
 
         // ===== EVENT LISTENERS =====
+        document.getElementById('menuToggle').addEventListener('click', () => {
+            const menu = document.getElementById('navbarMenu');
+            const expanded = menu.classList.toggle('is-open');
+            document.getElementById('menuToggle').setAttribute('aria-expanded', String(expanded));
+        });
+        document.querySelectorAll('#navbarMenu a, #navbarMenu button').forEach(link => link.addEventListener('click', () => {
+            document.getElementById('navbarMenu').classList.remove('is-open');
+            document.getElementById('menuToggle').setAttribute('aria-expanded', 'false');
+        }));
+        document.querySelectorAll('.special-card').forEach(card => card.addEventListener('click', () => openSpecial(card.dataset.game)));
+        document.querySelector('[data-close-specials]').addEventListener('click', () => { stopCharadesTimer(); closeModal('specialsModal'); });
+        document.getElementById('shareTextBtn').addEventListener('click', () => shareText());
+        document.getElementById('shareImageBtn').addEventListener('click', () => shareImage());
+        document.getElementById('gameContent').addEventListener('click', event => {
+            const button = event.target.closest('button');
+            if (!button) return;
+            if (button.dataset.mode) {
+                gameState.mode = button.dataset.mode;
+                const bank = gameState.mode === 'random' ? (Math.random() < .5 ? 'truth' : 'dare') : gameState.mode;
+                renderGame('truth', pickBank(bank));
+                return;
+            }
+            if (button.dataset.category) { gameState.charades.category = button.dataset.category; gameState.charades.wordIndex = 0; renderCharades(); return; }
+            if (button.dataset.choice) { button.classList.toggle('selected'); return; }
+            if (button.dataset.deleteNote !== undefined) {
+                const inbox = safeParse(localStorage.getItem('dateSparkAnonymousInbox'), []);
+                inbox.splice(Number(button.dataset.deleteNote), 1);
+                localStorage.setItem('dateSparkAnonymousInbox', JSON.stringify(inbox));
+                renderAnonymous(); return;
+            }
+            switch (button.dataset.gameAction) {
+                case 'next': {
+                    const bank = gameState.type === 'truth' ?
+                        (gameState.mode === 'random' ? (Math.random() < .5 ? 'truth' : 'dare') : gameState.mode || 'truth') :
+                        gameState.type;
+                    renderGame(gameState.type, pickBank(bank));
+                    break;
+                }
+                case 'previous': { const previous = gameState.history[Math.max(0, gameState.history.length - 2)]; if (previous) renderGame(gameState.type, previous); break; }
+                case 'share': openShare(getGamePayload()); break;
+                case 'image': shareImage(getGamePayload(), true); break;
+                case 'correct': nextCharade(true); break;
+                case 'skip': nextCharade(false); break;
+                case 'start': startCharades(); break;
+                case 'reset':
+                    stopCharadesTimer();
+                    if (gameState.type === 'charades') { gameState.charades = { score: 0, seconds: 60, timer: null, category: 'Movies', wordIndex: 0 }; renderCharades(); }
+                    else { gameState.history = []; renderGame(gameState.type); }
+                    break;
+                case 'create-note': {
+                    const prompt = String(document.getElementById('anonymousPrompt')?.value || '').trim();
+                    if (!prompt) return showToast('Write a prompt first.', 'error');
+                    const display = document.getElementById('noteLink');
+                    display.hidden = false; display.textContent = 'Local demo link: date-spark://note/' + encodeURIComponent(prompt.slice(0, 64));
+                    break;
+                }
+                case 'save-reply': saveAnonymousReply(); break;
+                case 'clear-inbox': localStorage.removeItem('dateSparkAnonymousInbox'); renderAnonymous(); showToast('Local inbox cleared.', 'info'); break;
+            }
+        });
         document.querySelectorAll('.filter-btn').forEach(btn => {
             btn.addEventListener('click', function () {
                 filterQuestions(this.dataset.category);
@@ -887,6 +1044,7 @@
         document.addEventListener('keydown', (e) => {
             if (document.querySelector('.modal-overlay.open')) {
                 if (e.key === 'Escape') {
+                    if (document.getElementById('specialsModal').classList.contains('open')) stopCharadesTimer();
                     document.querySelectorAll('.modal-overlay.open').forEach(m => m.classList.remove('open'));
                 }
                 return;

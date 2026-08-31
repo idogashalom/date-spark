@@ -175,6 +175,9 @@ const AUTH = (() => {
     }
 
     return {
+        // Reuse this authenticated browser client for features such as the private
+        // anonymous inbox, instead of creating duplicate Supabase clients.
+        getClient,
         register, login, logout, getCurrentUser, getCurrentProfile, requireAuth,
         redirectIfAuthed, isValidEmail, isAdmin, requireAdmin, recordActivity,
         getAdminDashboardData, deleteUser: userId => callAdminFunction('delete_user', { userId }),

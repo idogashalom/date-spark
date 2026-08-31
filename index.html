@@ -924,7 +924,7 @@
                 charades
             };
         })();
-        const gameState = { type: 'truth', mode: 'truth', prompt: '', history: [], historyIndex: -1, choices: {}, charades: { score: 0, seconds: 60, timer: null, running: false, category: 'Movies', wordIndex: 0 } };
+        const gameState = { type: 'truth', mode: 'truth', prompt: '', history: [], historyIndex: -1, choices: {}, players: [], charades: { score: 0, seconds: 60, timer: null, running: false, category: 'Movies', wordIndex: 0 } };
         function pickBank(name) { const bank = specialBanks[name]; const current = gameState.history[gameState.historyIndex]; let prompt; do { prompt = bank[Math.floor(Math.random() * bank.length)]; } while (bank.length > 1 && prompt === current); gameState.history = gameState.history.slice(0, gameState.historyIndex + 1); gameState.history.push(prompt); gameState.historyIndex = gameState.history.length - 1; return prompt; }
         function gameActions(extra = '') { return `<div class="game-actions">${extra}<button class="btn btn-outline" data-game-action="previous"><i class="fas fa-arrow-left"></i> Previous</button><button class="btn btn-primary" data-game-action="next"><i class="fas fa-arrow-right"></i> Next</button><button class="action-btn" data-game-action="share"><i class="fas fa-share-alt"></i> Share</button><button class="action-btn" data-game-action="image"><i class="fas fa-image"></i> Image</button><button class="action-btn" data-game-action="reset"><i class="fas fa-rotate-left"></i> Reset</button></div>`; }
         function renderGame(type, prompt) {
@@ -940,7 +940,8 @@
             gameState.prompt = prompt;
             const selected = gameState.choices[prompt];
             const choice = (value, title, detail = '') => `<button class="choice-btn ${selected === value ? 'selected' : ''}" data-choice="${value}" aria-pressed="${selected === value}"><b>${title}</b>${escapeHtml(detail)}</button>`;
-            const body = type === 'wyr' ? (() => { const [a,b] = prompt.split('|'); return `<div class="choice-pair">${choice('A', 'A', a)}<span>or</span>${choice('B', 'B', b)}</div>`; })() : `<p class="game-prompt">${escapeHtml(prompt)}</p>${type === 'nhie' ? `<div class="choice-pair compact">${choice('Have', 'I have')}${choice('Never', 'Never')}</div>` : ''}${type === 'redgreen' ? `<div class="choice-pair compact">${choice('Red flag', 'Red flag')}${choice('Green flag', 'Green flag')}</div>` : ''}${type === 'likely' ? `<div class="choice-pair compact">${choice('Me', 'Me')}${choice('You', 'You')}${choice('Tie', 'Tie')}</div>` : ''}`;
+            const likelyPlayers = gameState.players.length ? gameState.players : ['Me', 'You', 'Everyone'];
+            const body = type === 'wyr' ? (() => { const [a,b] = prompt.split('|'); return `<div class="choice-pair">${choice('A', 'A', a)}<span>or</span>${choice('B', 'B', b)}</div>`; })() : `<p class="game-prompt">${escapeHtml(prompt)}</p>${type === 'nhie' ? `<div class="choice-pair compact">${choice('Have', 'I have')}${choice('Never', 'Never')}</div>` : ''}${type === 'redgreen' ? `<div class="choice-pair compact">${choice('Red flag', 'Red flag')}${choice('Green flag', 'Green flag')}</div>` : ''}${type === 'likely' ? `<label class="field-label">Players (separate names with commas)<input id="likelyPlayers" maxlength="180" value="${escapeHtml(gameState.players.join(', '))}" placeholder="Alex, Sam, Taylor"></label><div class="choice-pair compact">${likelyPlayers.map(name => choice(name, name)).join('')}</div>` : ''}`;
             const modeControls = type === 'truth' ?
                 `<div class="mode-switch">
                     <button data-mode="truth" class="${gameState.mode === 'truth' ? 'active' : ''}">Truth</button>
@@ -951,17 +952,13 @@
 
             content.innerHTML = `<span class="game-kicker">SPECIALS</span><h2 id="gameTitle">${titles[type]}</h2>${modeControls}${body}${gameActions()}`;
         }
-        function renderCharades() { const c = gameState.charades, words = specialBanks.charades[c.category], word = words[c.wordIndex % words.length], timerLabel = c.running ? 'Pause' : (c.seconds === 60 ? 'Start 60s' : 'Resume'); document.getElementById('gameContent').innerHTML = `<span class="game-kicker">SPECIALS</span><h2 id="gameTitle">Charades</h2><div class="category-tabs">${Object.keys(specialBanks.charades).map(x => `<button data-category="${x}" class="${x === c.category ? 'active' : ''}" ${c.running ? 'disabled' : ''}>${x}</button>`).join('')}</div><div class="timer-ring"><strong>${c.seconds}</strong><span>seconds</span></div><p class="game-prompt charade-word">${escapeHtml(word)}</p><p class="scoreline" aria-live="polite">Score: <b>${c.score}</b></p><div class="game-actions"><button class="btn btn-success" data-game-action="correct">Correct +1</button><button class="btn btn-outline" data-game-action="skip">Skip</button><button class="btn btn-primary" data-game-action="timer">${timerLabel}</button><button class="action-btn" data-game-action="share"><i class="fas fa-share-alt"></i> Share</button><button class="action-btn" data-game-action="reset">Reset</button></div>`; }
+        function renderCharades() { const c = gameState.charades, words = specialBanks.charades[c.category], word = words[c.wordIndex % words.length], timerLabel = c.running ? 'Pause' : (c.seconds === 60 ? 'Start 60s' : 'Resume'); document.getElementById('gameContent').innerHTML = `<span class="game-kicker">SPECIALS</span><h2 id="gameTitle">Charades</h2><div class="category-tabs">${Object.keys(specialBanks.charades).map(x => `<button data-category="${x}" class="${x === c.category ? 'active' : ''}" ${c.running ? 'disabled' : ''}>${x}</button>`).join('')}</div><div class="timer-ring"><strong>${c.seconds}</strong><span>seconds</span></div><p class="game-prompt charade-word">${escapeHtml(word)}</p><p class="scoreline" aria-live="polite">Score: <b>${c.score}</b></p><div class="game-actions"><button class="btn btn-success" data-game-action="correct">Correct +1</button><button class="btn btn-outline" data-game-action="skip">Skip</button><button class="btn btn-outline" data-game-action="next-charade">Next</button><button class="btn btn-primary" data-game-action="timer">${timerLabel}</button><button class="action-btn" data-game-action="share"><i class="fas fa-share-alt"></i> Share</button><button class="action-btn" data-game-action="image"><i class="fas fa-image"></i> Export</button><button class="action-btn" data-game-action="reset">Reset</button></div>`; }
         function renderAnonymous() { const inbox = safeParse(localStorage.getItem('dateSparkAnonymousInbox'), []); document.getElementById('gameContent').innerHTML = `<span class="game-kicker">SPECIALS</span><h2 id="gameTitle">Anonymous Note</h2><p class="disclosure"><i class="fas fa-circle-info"></i> Demo only: notes and replies stay in this browser. This is not an anonymous service.</p><label class="field-label">Create a prompt<input id="anonymousPrompt" maxlength="180" placeholder="What made you smile today?"></label><div class="game-actions"><button class="btn btn-primary" data-game-action="create-note">Create link</button></div><div id="noteLink" class="link-display" hidden></div><label class="field-label">Add a demo response<input id="anonymousReply" maxlength="240" placeholder="Write a kind reply…"></label><div class="game-actions"><button class="btn btn-secondary" data-game-action="save-reply">Save reply</button><button class="action-btn" data-game-action="clear-inbox">Clear inbox</button></div><h3 class="inbox-title">Local inbox (${inbox.length})</h3><div class="inbox">${inbox.length ? inbox.map((x,i) => `<div><b>${escapeHtml(x.prompt)}</b><p>${escapeHtml(x.reply)}</p><button data-delete-note="${i}" aria-label="Delete reply"><i class="fas fa-trash"></i></button></div>`).join('') : '<p>No responses yet — your demo inbox is ready.</p>'}</div>`; }
         // ===== LET THEM SAY IT: owner-only Supabase inbox =====
-        const anonymousState = { inbox: null, messages: [], filter: 'all', loading: false };
-        let anonymousClient = null;
+        const anonymousState = { inbox: null, messages: [], filter: 'all', loading: false, creating: false };
         function getAnonymousClient() {
-            if (anonymousClient) return anonymousClient;
-            const config = window.DATE_SPARK_SUPABASE_CONFIG || {};
-            if (!window.supabase || !config.url || !config.anonKey) return null;
-            anonymousClient = window.supabase.createClient(config.url, config.anonKey, { auth: { persistSession: true, autoRefreshToken: true } });
-            return anonymousClient;
+            // Auth owns the single Supabase client and its session lifecycle.
+            return AUTH && typeof AUTH.getClient === 'function' ? AUTH.getClient() : null;
         }
         function anonymousLink(token) { return `${window.location.origin}/html/anonymous.html?token=${encodeURIComponent(token)}`; }
         function anonymousTime(value) { const seconds = Math.max(0, Math.floor((Date.now() - new Date(value).getTime()) / 1000)); if (seconds < 60) return 'just now'; if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`; if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`; return `${Math.floor(seconds / 86400)}d ago`; }
@@ -991,7 +988,7 @@
             const unread = anonymousState.messages.filter(message => !message.is_read).length;
             if (anonymousState.loading) { content.innerHTML = `<span class="game-kicker">SPECIALS</span><h2 id="gameTitle">LET THEM SAY IT</h2><p class="anonymous-loading"><i class="fas fa-spinner fa-spin"></i> Opening your secret inbox...</p>`; return; }
             if (anonymousState.error) { content.innerHTML = `<span class="game-kicker">SPECIALS</span><h2 id="gameTitle">LET THEM SAY IT</h2><p class="disclosure">${escapeHtml(anonymousState.error)}</p><div class="game-actions"><button class="btn btn-primary" data-game-action="reload-anonymous">Try again</button></div>`; return; }
-            if (!anonymousState.inbox) { content.innerHTML = `<section class="anonymous-owner"><span class="game-kicker">SPECIALS</span><h2 id="gameTitle">LET THEM SAY IT <span aria-hidden="true">&#128064;</span></h2><p class="anonymous-lede">Your anonymous corner for confessions, compliments, chaos and everything people are too shy to say out loud.</p><div class="anonymous-orbit"><i class="fas fa-envelope-open-text"></i><span>say it</span></div><h3>Create your anonymous inbox</h3><p>Make one personal link, drop it anywhere, and let the messages roll in. Names are never requested or shown.</p><div class="game-actions"><button class="btn btn-primary" data-game-action="create-anonymous"><i class="fas fa-link"></i> Create My Anonymous Link</button></div></section>`; return; }
+            if (!anonymousState.inbox) { content.innerHTML = `<section class="anonymous-owner"><span class="game-kicker">SPECIALS</span><h2 id="gameTitle">LET THEM SAY IT <span aria-hidden="true">&#128064;</span></h2><p class="anonymous-lede">Your anonymous corner for confessions, compliments, chaos and everything people are too shy to say out loud.</p><div class="anonymous-orbit"><i class="fas fa-envelope-open-text"></i><span>say it</span></div><h3>Create your anonymous inbox</h3><p>Make one personal link, drop it anywhere, and let the messages roll in. Names are never requested or shown.</p><div class="game-actions"><button class="btn btn-primary" data-game-action="create-anonymous" ${anonymousState.creating ? 'disabled' : ''}><i class="fas ${anonymousState.creating ? 'fa-spinner fa-spin' : 'fa-link'}"></i> ${anonymousState.creating ? 'Creating link...' : 'Create My Anonymous Link'}</button></div></section>`; return; }
             const link = anonymousLink(anonymousState.inbox.public_token);
             const messages = anonymousState.messages.filter(message => anonymousState.filter === 'all' || !message.is_read);
             content.innerHTML = `<section class="anonymous-owner"><span class="game-kicker">SPECIALS</span><h2 id="gameTitle">LET THEM SAY IT <span aria-hidden="true">&#128064;</span></h2><p class="anonymous-lede">Your anonymous inbox is ready. Drop this link anywhere and let the messages roll in.</p><div class="anonymous-link-panel"><span>Your personal link</span><code>${escapeHtml(link)}</code><div class="anonymous-link-actions"><button class="btn btn-secondary" data-game-action="copy-anonymous-link"><i class="fas fa-copy"></i> Copy My Link</button><button class="btn btn-outline" data-game-action="share-anonymous-link"><i class="fas fa-share-nodes"></i> Share My Link</button></div></div><div class="anonymous-inbox-heading"><div><h3>Your Secret Inbox <span aria-hidden="true">&#128064;</span></h3><p>${unread ? `You have ${unread} new ${unread === 1 ? 'message' : 'messages'}.` : 'No new messages right now.'}</p></div>${anonymousState.messages.length ? '<button class="action-btn danger-action" data-game-action="clear-anonymous">Clear all</button>' : ''}</div><div class="mode-switch anonymous-filters"><button data-anonymous-filter="all" class="${anonymousState.filter === 'all' ? 'active' : ''}">All <span>${anonymousState.messages.length}</span></button><button data-anonymous-filter="unread" class="${anonymousState.filter === 'unread' ? 'active' : ''}">Unread <span>${unread}</span></button></div><div class="anonymous-inbox">${messages.length ? messages.map(message => `<article class="anonymous-message ${message.is_read ? '' : 'is-unread'}" data-message-id="${message.id}"><div class="anonymous-message-meta"><span>${message.is_read ? 'Read' : 'New'}</span><time>${anonymousTime(message.created_at)}</time></div>${message.message_text ? `<p>${escapeHtml(message.message_text)}</p>` : ''}${message.imageUrl ? `<img src="${escapeHtml(message.imageUrl)}" alt="Anonymous attachment">` : message.image_path ? '<p class="image-unavailable">Image attachment unavailable.</p>' : ''}<div class="anonymous-message-actions"><button class="action-btn" data-game-action="share-anonymous-message" data-message-id="${message.id}"><i class="fas fa-share-alt"></i> Share</button><button class="action-btn" data-game-action="read-anonymous-message" data-message-id="${message.id}">${message.is_read ? 'Mark unread' : 'Mark read'}</button><button class="action-btn danger-action" data-game-action="delete-anonymous-message" data-message-id="${message.id}"><i class="fas fa-trash"></i> Delete</button></div></article>`).join('') : `<div class="anonymous-empty"><i class="fas fa-envelope-open-text"></i><h3>No secrets yet</h3><p>Share your link and see what people have been too shy to tell you.</p></div>`}</div></section>`;
@@ -1000,8 +997,11 @@
         async function createAnonymousInbox() {
             const client = getAnonymousClient(), profile = await AUTH.getCurrentUser();
             if (!client || !profile) return showToast('Please sign in to create your anonymous link.', 'error');
+            if (anonymousState.creating) return;
+            anonymousState.creating = true; renderAnonymous();
             const { data, error } = await client.from('anonymous_inboxes').insert({ owner_id: profile.id }).select('id, public_token, created_at').single();
-            if (error || !data) return showToast('Could not create your link. Please try again.', 'error');
+            anonymousState.creating = false;
+            if (error || !data) { renderAnonymous(); return showToast('Could not create your link. Please try again.', 'error'); }
             anonymousState.inbox = data; anonymousState.messages = []; renderAnonymous(); showToast('Your anonymous inbox is ready.');
         }
         async function updateAnonymousRead(id, isRead) { const client = getAnonymousClient(); const { error } = await client.from('anonymous_messages').update({ is_read: isRead }).eq('id', id); if (error) return showToast('Could not update that message.', 'error'); const message = anonymousState.messages.find(item => String(item.id) === String(id)); if (message) message.is_read = isRead; renderAnonymous(); }
@@ -1055,19 +1055,6 @@
             renderCharades();
         }
 
-        function saveAnonymousReply() {
-            const promptInput = document.getElementById('anonymousPrompt');
-            const replyInput = document.getElementById('anonymousReply');
-            const prompt = String(promptInput?.value || '').trim();
-            const reply = String(replyInput?.value || '').trim();
-            if (!prompt || !reply) return showToast('Write both a prompt and a reply first.', 'error');
-            const inbox = safeParse(localStorage.getItem('dateSparkAnonymousInbox'), []);
-            inbox.unshift({ prompt: prompt.slice(0, 180), reply: reply.slice(0, 240), createdAt: Date.now() });
-            localStorage.setItem('dateSparkAnonymousInbox', JSON.stringify(inbox.slice(0, 50)));
-            renderAnonymous();
-            showToast('Saved only in this browser.', 'success');
-        }
-
         // ===== EVENT LISTENERS =====
         document.getElementById('menuToggle').addEventListener('click', () => {
             const menu = document.getElementById('navbarMenu');
@@ -1078,6 +1065,14 @@
             document.getElementById('navbarMenu').classList.remove('is-open');
             document.getElementById('menuToggle').setAttribute('aria-expanded', 'false');
         }));
+        document.addEventListener('click', event => {
+            const menu = document.getElementById('navbarMenu');
+            const toggle = document.getElementById('menuToggle');
+            if (menu.classList.contains('is-open') && !menu.contains(event.target) && !toggle.contains(event.target)) {
+                menu.classList.remove('is-open');
+                toggle.setAttribute('aria-expanded', 'false');
+            }
+        });
         document.querySelectorAll('.special-card').forEach(card => card.addEventListener('click', () => openSpecial(card.dataset.game)));
         document.querySelector('[data-close-specials]').addEventListener('click', () => { stopCharadesTimer(); closeModal('specialsModal'); });
         document.getElementById('shareTextBtn').addEventListener('click', () => shareText());
@@ -1087,6 +1082,9 @@
         document.getElementById('gameContent').addEventListener('click', async event => {
             const button = event.target.closest('button');
             if (!button) return;
+            // Capture the names before a choice redraws the game card.
+            const playersInput = document.getElementById('likelyPlayers');
+            if (playersInput) gameState.players = playersInput.value.split(',').map(name => name.trim().slice(0, 30)).filter(Boolean).slice(0, 8);
             if (button.dataset.mode) {
                 gameState.mode = button.dataset.mode;
                 const bank = gameState.mode === 'random' ? (Math.random() < .5 ? 'truth' : 'dare') : gameState.mode;
@@ -1096,12 +1094,6 @@
             if (button.dataset.category) { stopCharadesTimer(); gameState.charades.category = button.dataset.category; gameState.charades.wordIndex = 0; renderCharades(); return; }
             if (button.dataset.choice) { gameState.choices[gameState.prompt] = button.dataset.choice; renderGame(gameState.type, gameState.prompt); return; }
             if (button.dataset.anonymousFilter) { anonymousState.filter = button.dataset.anonymousFilter; renderAnonymous(); return; }
-            if (button.dataset.deleteNote !== undefined) {
-                const inbox = safeParse(localStorage.getItem('dateSparkAnonymousInbox'), []);
-                inbox.splice(Number(button.dataset.deleteNote), 1);
-                localStorage.setItem('dateSparkAnonymousInbox', JSON.stringify(inbox));
-                renderAnonymous(); return;
-            }
             switch (button.dataset.gameAction) {
                 case 'reload-anonymous': loadAnonymousInbox(); break;
                 case 'create-anonymous': createAnonymousInbox(); break;
@@ -1123,21 +1115,13 @@
                 case 'image': shareImage(getGamePayload(), true); break;
                 case 'correct': nextCharade(true); break;
                 case 'skip': nextCharade(false); break;
+                case 'next-charade': nextCharade(false); break;
                 case 'timer': if (gameState.charades.running) { stopCharadesTimer(); renderCharades(); } else startCharades(); break;
                 case 'reset':
                     stopCharadesTimer();
                     if (gameState.type === 'charades') { gameState.charades = { score: 0, seconds: 60, timer: null, running: false, category: 'Movies', wordIndex: 0 }; renderCharades(); }
                     else { gameState.history = []; renderGame(gameState.type); }
                     break;
-                case 'create-note': {
-                    const prompt = String(document.getElementById('anonymousPrompt')?.value || '').trim();
-                    if (!prompt) return showToast('Write a prompt first.', 'error');
-                    const display = document.getElementById('noteLink');
-                    display.hidden = false; display.textContent = 'Local demo link: date-spark://note/' + encodeURIComponent(prompt.slice(0, 64));
-                    break;
-                }
-                case 'save-reply': saveAnonymousReply(); break;
-                case 'clear-inbox': localStorage.removeItem('dateSparkAnonymousInbox'); renderAnonymous(); showToast('Local inbox cleared.', 'info'); break;
             }
         });
         document.querySelectorAll('.filter-btn').forEach(btn => {
@@ -1147,6 +1131,10 @@
         });
 
         document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                document.getElementById('navbarMenu').classList.remove('is-open');
+                document.getElementById('menuToggle').setAttribute('aria-expanded', 'false');
+            }
             if (document.querySelector('.modal-overlay.open')) {
                 if (e.key === 'Escape') {
                     if (document.getElementById('specialsModal').classList.contains('open')) stopCharadesTimer();

@@ -153,8 +153,10 @@ create table if not exists public.anonymous_inboxes (
     id uuid primary key default gen_random_uuid(),
     owner_id uuid not null unique references public.profiles(id) on delete cascade,
     public_token uuid not null unique default gen_random_uuid(),
+    active boolean not null default true,
     created_at timestamptz not null default now()
 );
+alter table public.anonymous_inboxes add column if not exists active boolean not null default true;
 alter table public.anonymous_messages add column if not exists inbox_id uuid references public.anonymous_inboxes(id) on delete cascade;
 alter table public.anonymous_messages add column if not exists message_text text;
 alter table public.anonymous_messages add column if not exists image_path text;
@@ -162,6 +164,7 @@ alter table public.anonymous_messages add column if not exists is_read boolean n
 alter table public.anonymous_messages alter column prompt_id drop not null;
 alter table public.anonymous_messages alter column body drop not null;
 create index if not exists anonymous_messages_inbox_created_idx on public.anonymous_messages (inbox_id, created_at desc);
+create index if not exists anonymous_inboxes_public_token_active_idx on public.anonymous_inboxes (public_token) where active;
 alter table public.anonymous_inboxes enable row level security;
 drop policy if exists "inbox_owner_manage" on public.anonymous_inboxes;
 create policy "inbox_owner_manage" on public.anonymous_inboxes for all using (owner_id = auth.uid()) with check (owner_id = auth.uid());
@@ -173,13 +176,13 @@ with check (exists (select 1 from public.anonymous_inboxes i where i.id = inbox_
 
 create or replace function public.get_public_anonymous_inbox(p_token uuid)
 returns table (valid boolean) language sql security definer set search_path = public as $$
-    select true from public.anonymous_inboxes where public_token = p_token
+    select true from public.anonymous_inboxes where public_token = p_token and active
 $$;
 create or replace function public.submit_anonymous_message(p_token uuid, p_message_text text, p_image_path text default null)
 returns void language plpgsql security definer set search_path = public as $$
 declare v_inbox uuid;
 begin
-    select id into v_inbox from public.anonymous_inboxes where public_token = p_token;
+    select id into v_inbox from public.anonymous_inboxes where public_token = p_token and active;
     if v_inbox is null then raise exception 'invalid anonymous inbox'; end if;
     if coalesce(length(trim(p_message_text)), 0) = 0 and p_image_path is null then raise exception 'message required'; end if;
     if coalesce(length(p_message_text), 0) > 1000 or (p_image_path is not null and p_image_path !~ ('^' || p_token::text || '/')) then raise exception 'invalid message'; end if;
@@ -200,7 +203,7 @@ create or replace function public.is_valid_anonymous_upload_token(p_token text)
 returns boolean language sql stable security definer set search_path = public as $$
     select exists (
         select 1 from public.anonymous_inboxes
-        where public_token::text = p_token
+        where public_token::text = p_token and active
     )
 $$;
 grant execute on function public.is_valid_anonymous_upload_token(text) to anon, authenticated;

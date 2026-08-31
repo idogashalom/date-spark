@@ -825,7 +825,7 @@
 
         // ===== INIT =====
         (function init() {
-            AUTH.requireAuth('login.html');
+            AUTH.requireAuth('html/login.html');
             const currentUser = AUTH.getCurrentUser();
             if (currentUser) {
                 document.getElementById('userGreeting').textContent = `Hi, ${currentUser.username}`;

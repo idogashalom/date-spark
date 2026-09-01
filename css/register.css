@@ -1,14 +1,30 @@
 * {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    box-sizing: border-box;
+}
+
+html,
+body {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
 }
 
 body {
     margin: 0;
     min-height: 100vh;
+    min-height: 100dvh;
     display: flex;
     justify-content: center;
     align-items: center;
     background: #1a1a2e;
+}
+
+main {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 @property --a {
@@ -224,7 +240,7 @@ body {
 @media (max-width: 520px) {
     body {
         align-items: flex-start;
-        padding: 24px 14px 80px;
+        padding: 24px 12px 80px;
     }
 
     main {
@@ -233,40 +249,66 @@ body {
 
     .box,
     .box:hover {
-        width: 100%;
-        max-width: 400px;
+        width: min(100%, 400px);
+        max-width: 100%;
         height: auto;
-        min-height: 455px;
+        min-height: 0;
         margin: 0 auto;
     }
 
     .login,
     .box:hover .login {
-        inset: 12px;
-        min-height: calc(100% - 24px);
-        padding: 26px 0;
+        inset: 14px;
+        min-height: auto;
+        padding: 20px 0 18px;
     }
 
     .loginBx,
     .box:hover .loginBx {
-        width: calc(100% - 38px);
+        width: calc(100% - 18px);
         transform: translateY(0);
+        gap: 14px;
+    }
+
+    .loginBx h2 {
+        letter-spacing: 0.12em;
+        font-size: 0.96em;
     }
 
     .loginBx input {
         min-height: 46px;
+        font-size: 0.98rem;
     }
 
     .group {
-        gap: 10px;
+        gap: 8px;
         flex-wrap: wrap;
         justify-content: center;
         text-align: center;
+        flex-direction: column;
+        align-items: center;
     }
 
     .auth-hint {
         position: static;
         transform: none;
         margin: 18px auto 0;
+        padding: 0 12px;
+        max-width: 100%;
+    }
+}
+
+@media (max-width: 360px) {
+    .loginBx h2 {
+        letter-spacing: 0.08em;
+        font-size: 0.9em;
+    }
+
+    .loginBx input {
+        padding: 10px 14px;
+    }
+
+    .auth-hint {
+        font-size: 0.75em;
     }
 }

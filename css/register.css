@@ -7,11 +7,12 @@ html,
 body {
     width: 100%;
     max-width: 100%;
+    margin: 0;
+    padding: 0;
     overflow-x: hidden;
 }
 
 body {
-    margin: 0;
     min-height: 100vh;
     min-height: 100dvh;
     display: flex;
@@ -22,10 +23,17 @@ body {
 
 main {
     width: 100%;
+    min-height: 100vh;
+    min-height: 100dvh;
     display: flex;
     justify-content: center;
     align-items: center;
+    padding: 30px 15px;
 }
+
+/* =========================
+   ANIMATED LOGIN BOX
+========================= */
 
 @property --a {
     syntax: '<angle>';
@@ -65,8 +73,7 @@ main {
 .box::before {
     content: '';
     position: absolute;
-    width: 100%;
-    height: 100%;
+    inset: 0;
     background: conic-gradient(from var(--a),
             #45f3ff 0%,
             #45f3ff 5%,
@@ -77,6 +84,7 @@ main {
     border-radius: 20px;
     animation: rotating 4s linear infinite;
     animation-delay: -1s;
+    pointer-events: none;
 }
 
 .box::after {
@@ -86,6 +94,7 @@ main {
     background: #2d2d39;
     border-radius: 15px;
     border: 8px solid #25252d;
+    pointer-events: none;
 }
 
 .box:hover {
@@ -98,8 +107,12 @@ main {
 }
 
 .box:hover .loginBx {
-    transform: translateY(0px);
+    transform: translateY(0);
 }
+
+/* =========================
+   LOGIN CONTAINER
+========================= */
 
 .login {
     position: absolute;
@@ -137,18 +150,23 @@ main {
     font-size: 1.1em;
     display: flex;
     align-items: center;
+    justify-content: center;
     gap: 10px;
     margin: 0;
+    text-align: center;
 }
 
 .loginBx h2 i {
     color: #ff2770;
     font-size: 1.3em;
-    text-shadow: 0 0 5px #ff2770, 0 0 20px #ff2770;
+    text-shadow:
+        0 0 5px #ff2770,
+        0 0 20px #ff2770;
 }
 
 .loginBx input {
     width: 100%;
+    min-width: 0;
     padding: 10px 20px;
     outline: none;
     font-size: 1em;
@@ -156,7 +174,6 @@ main {
     color: #ffffff;
     border-radius: 30px;
     border: 2px solid #fff;
-    box-sizing: border-box;
 }
 
 .loginBx input::placeholder {
@@ -173,7 +190,9 @@ main {
 }
 
 .loginBx input[type="submit"]:hover {
-    box-shadow: 0 0 10px #45f3ff, 0 0 60px #45f3ff;
+    box-shadow:
+        0 0 10px #45f3ff,
+        0 0 60px #45f3ff;
 }
 
 .loginBx input[type="submit"]:disabled {
@@ -182,10 +201,16 @@ main {
     box-shadow: none;
 }
 
+/* =========================
+   LINKS
+========================= */
+
 .group {
     width: 100%;
     display: flex;
     justify-content: space-between;
+    align-items: center;
+    gap: 10px;
     font-size: 0.85em;
 }
 
@@ -207,12 +232,17 @@ main {
     font-weight: 600;
 }
 
+/* =========================
+   MESSAGES
+========================= */
+
 .form-message {
     width: 100%;
     text-align: center;
     font-size: 0.85em;
     min-height: 18px;
     margin: 0;
+    line-height: 1.4;
 }
 
 .form-message.error {
@@ -223,6 +253,10 @@ main {
     color: #45f3ff;
 }
 
+/* =========================
+   AUTH HINT
+========================= */
+
 .auth-hint {
     position: fixed;
     bottom: 20px;
@@ -232,83 +266,221 @@ main {
     font-size: 0.8em;
     text-align: center;
     max-width: 320px;
+    width: calc(100% - 30px);
 }
 
-/* Touch devices do not have the hover interaction that reveals the form.
-   Keep the existing desktop animation, while making the full form visible
-   and comfortably sized on phones. */
+/* =====================================================
+   MOBILE RESPONSIVE
+===================================================== */
+
 @media (max-width: 520px) {
+
+    html,
     body {
-        align-items: flex-start;
-        padding: 24px 12px 80px;
+        width: 100%;
+        min-width: 0;
+        overflow-x: hidden;
+    }
+
+    body {
+        display: block;
+        min-height: 100dvh;
+        padding: 0;
     }
 
     main {
         width: 100%;
+        min-height: 100dvh;
+        min-height: 100vh;
+        display: flex;
+        align-items: flex-start;
+        justify-content: center;
+        padding: 30px 14px 90px;
     }
 
+    /* Mobile box */
     .box,
     .box:hover {
-        width: min(100%, 400px);
-        max-width: 100%;
+        position: relative;
+        width: 100%;
+        max-width: 400px;
         height: auto;
         min-height: 0;
         margin: 0 auto;
+        padding: 4px;
+        display: flex;
+        align-items: stretch;
+        justify-content: center;
+        border-radius: 20px;
     }
 
+    .box::before {
+        position: absolute;
+        inset: 0;
+        border-radius: 20px;
+        animation-duration: 6s;
+    }
+
+    .box::after {
+        position: absolute;
+        inset: 4px;
+        border-radius: 15px;
+        border-width: 6px;
+    }
+
+    /* Mobile login panel */
     .login,
     .box:hover .login {
-        inset: 14px;
-        min-height: auto;
-        padding: 20px 0 18px;
+        position: relative;
+        inset: auto;
+        width: 100%;
+        min-height: 0;
+        height: auto;
+        padding: 32px 20px 28px;
+        margin: 0;
+        border-radius: 12px;
+        overflow: visible;
+        z-index: 1000;
+        display: flex;
+        justify-content: center;
+        align-items: center;
     }
 
+    /* Mobile form */
     .loginBx,
     .box:hover .loginBx {
-        width: calc(100% - 18px);
-        transform: translateY(0);
+        position: relative;
+        width: 100%;
+        max-width: 340px;
+        transform: none;
         gap: 14px;
+        padding: 0;
+        margin: 0 auto;
     }
 
     .loginBx h2 {
-        letter-spacing: 0.12em;
-        font-size: 0.96em;
+        width: 100%;
+        letter-spacing: 0.1em;
+        font-size: 0.95rem;
+        line-height: 1.4;
+        margin-bottom: 4px;
+    }
+
+    .loginBx h2 i {
+        font-size: 1.2em;
     }
 
     .loginBx input {
-        min-height: 46px;
-        font-size: 0.98rem;
+        width: 100%;
+        height: 48px;
+        min-height: 48px;
+        padding: 10px 16px;
+        font-size: 16px;
+    }
+
+    .loginBx input[type="submit"] {
+        height: 48px;
+        min-height: 48px;
     }
 
     .group {
-        gap: 8px;
-        flex-wrap: wrap;
-        justify-content: center;
-        text-align: center;
+        width: 100%;
         flex-direction: column;
+        justify-content: center;
         align-items: center;
+        gap: 12px;
+        text-align: center;
+        line-height: 1.4;
+    }
+
+    .group a,
+    .group button.link-btn {
+        font-size: 0.9rem;
+    }
+
+    .form-message {
+        width: 100%;
+        font-size: 0.82rem;
+        line-height: 1.4;
     }
 
     .auth-hint {
         position: static;
         transform: none;
+        width: 100%;
+        max-width: 350px;
         margin: 18px auto 0;
-        padding: 0 12px;
-        max-width: 100%;
+        padding: 0 10px;
+        font-size: 0.75rem;
+        line-height: 1.4;
     }
 }
 
+/* =====================================================
+   SMALL PHONES
+===================================================== */
+
 @media (max-width: 360px) {
+
+    main {
+        padding: 20px 10px 80px;
+    }
+
+    .box,
+    .box:hover {
+        max-width: 100%;
+    }
+
+    .login,
+    .box:hover .login {
+        padding: 28px 15px 24px;
+    }
+
+    .loginBx,
+    .box:hover .loginBx {
+        max-width: 100%;
+        gap: 12px;
+    }
+
     .loginBx h2 {
-        letter-spacing: 0.08em;
-        font-size: 0.9em;
+        font-size: 0.86rem;
+        letter-spacing: 0.06em;
     }
 
     .loginBx input {
         padding: 10px 14px;
+        font-size: 16px;
+    }
+
+    .group {
+        gap: 10px;
     }
 
     .auth-hint {
-        font-size: 0.75em;
+        font-size: 0.72rem;
+    }
+}
+
+/* =====================================================
+   VERY SMALL HEIGHT SCREENS
+===================================================== */
+
+@media (max-height: 650px) and (max-width: 520px) {
+
+    main {
+        align-items: flex-start;
+        padding-top: 15px;
+        padding-bottom: 60px;
+    }
+
+    .login,
+    .box:hover .login {
+        padding-top: 22px;
+        padding-bottom: 22px;
+    }
+
+    .loginBx,
+    .box:hover .loginBx {
+        gap: 10px;
     }
 }

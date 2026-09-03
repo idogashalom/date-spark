@@ -51,8 +51,7 @@
             Date<span class="brand-accent">Spark</span>
         </button>
 
-        <button class="menu-toggle" id="menuToggle" aria-controls="navbarMenu" aria-expanded="false"
-            aria-label="Open navigation menu"><span></span><span></span><span></span></button>
+        <button class="menu-toggle" id="menuToggle" aria-controls="navbarMenu" aria-expanded="false" aria-label="Open navigation menu"><span></span><span></span><span></span></button>
         <ul class="navbar-menu" id="navbarMenu">
             <li><a href="#" class="active" id="homeLink" onclick="goHome(); return false;"><i class="fas fa-home"></i>
                     Home</a></li>
@@ -153,52 +152,25 @@
         </div>
 
         <section class="specials-section" id="specials" aria-labelledby="specialsTitle">
-            <div class="specials-intro"><span class="eyebrow"><i class="fas fa-sparkles"></i> Date night,
-                    upgraded</span>
-                <h2 id="specialsTitle">Pick a little <em>special</em></h2>
-                <p>Seven playful ways to keep the conversation moving — no prep, no awkward silence.</p>
-            </div>
+            <div class="specials-intro"><span class="eyebrow"><i class="fas fa-sparkles"></i> Date night, upgraded</span><h2 id="specialsTitle">Pick a little <em>special</em></h2><p>Seven playful ways to keep the conversation moving — no prep, no awkward silence.</p></div>
             <div class="specials-grid">
-                <button class="special-card truth-card" data-game="truthDare"><i class="fas fa-dice"></i><strong>Truth
-                        or Dare</strong><span>Choose your courage level</span></button>
-                <button class="special-card charades-card" data-game="charades"><i
-                        class="fas fa-masks-theater"></i><strong>Charades</strong><span>Beat the clock
-                        together</span></button>
-                <button class="special-card wyr-card" data-game="wyr"><i class="fas fa-code-branch"></i><strong>Would
-                        You Rather</strong><span>Pick a side — then explain</span></button>
-                <button class="special-card nhie-card" data-game="nhie"><i class="fas fa-glass-cheers"></i><strong>Never
-                        Have I Ever</strong><span>Swap a surprising story</span></button>
-                <button class="special-card redgreen-card" data-game="redgreen"><i class="fas fa-flag"></i><strong>Red
-                        or Green Flag</strong><span>Compare your relationship radar</span></button>
-                <button class="special-card likely-card" data-game="likely"><i
-                        class="fas fa-people-arrows"></i><strong>Most Likely To</strong><span>Point, vote, defend your
-                        case</span></button>
-                <button class="special-card anonymous-card" data-game="anonymous"><i class="fas fa-eye"></i><strong>Let
-                        Them Say It</strong><span>Confessions, compliments &amp; chaos</span></button>
+                <button class="special-card truth-card" data-game="truthDare"><i class="fas fa-dice"></i><strong>Truth or Dare</strong><span>Choose your courage level</span></button>
+                <button class="special-card charades-card" data-game="charades"><i class="fas fa-masks-theater"></i><strong>Charades</strong><span>Beat the clock together</span></button>
+                <button class="special-card wyr-card" data-game="wyr"><i class="fas fa-code-branch"></i><strong>Would You Rather</strong><span>Pick a side — then explain</span></button>
+                <button class="special-card nhie-card" data-game="nhie"><i class="fas fa-glass-cheers"></i><strong>Never Have I Ever</strong><span>Swap a surprising story</span></button>
+                <button class="special-card redgreen-card" data-game="redgreen"><i class="fas fa-flag"></i><strong>Red or Green Flag</strong><span>Compare your relationship radar</span></button>
+                <button class="special-card likely-card" data-game="likely"><i class="fas fa-people-arrows"></i><strong>Most Likely To</strong><span>Point, vote, defend your case</span></button>
+                <button class="special-card anonymous-card" data-game="anonymous"><i class="fas fa-eye"></i><strong>Let Them Say It</strong><span>Confessions, compliments &amp; chaos</span></button>
             </div>
         </section>
     </div>
 
-    <div class="modal-overlay specials-modal" id="specialsModal" role="dialog" aria-modal="true"
-        aria-labelledby="gameTitle">
-        <article class="modal-box game-box"><button class="modal-close" data-close-specials
-                aria-label="Close Specials"><i class="fas fa-times"></i></button>
-            <div id="gameContent"></div>
-        </article>
+    <div class="modal-overlay specials-modal" id="specialsModal" role="dialog" aria-modal="true" aria-labelledby="gameTitle">
+        <article class="modal-box game-box"><button class="modal-close" data-close-specials aria-label="Close Specials"><i class="fas fa-times"></i></button><div id="gameContent"></div></article>
     </div>
 
     <div class="modal-overlay" id="shareModal" role="dialog" aria-modal="true" aria-labelledby="shareTitle">
-        <div class="modal-box share-box"><button class="modal-close" onclick="closeModal('shareModal')"
-                aria-label="Close share dialog"><i class="fas fa-times"></i></button>
-            <h2 id="shareTitle"><i class="fas fa-share-nodes modal-icon-primary"></i> Share this spark</h2>
-            <p>Send the prompt as text, WhatsApp message, or polished image card.</p>
-            <div class="modal-actions"><button class="btn btn-primary" id="shareTextBtn"><i
-                        class="fas fa-paper-plane"></i> Native share</button><button class="btn btn-outline"
-                    id="shareWhatsAppBtn"><i class="fab fa-whatsapp"></i> WhatsApp</button><button
-                    class="btn btn-outline" id="copyShareBtn"><i class="fas fa-copy"></i> Copy text</button><button
-                    class="btn btn-secondary" id="shareImageBtn"><i class="fas fa-image"></i> Export image</button>
-            </div>
-        </div>
+        <div class="modal-box share-box"><button class="modal-close" onclick="closeModal('shareModal')" aria-label="Close share dialog"><i class="fas fa-times"></i></button><h2 id="shareTitle"><i class="fas fa-share-nodes modal-icon-primary"></i> Share this spark</h2><p>Send the prompt as text, WhatsApp message, or polished image card.</p><div class="modal-actions"><button class="btn btn-primary" id="shareTextBtn"><i class="fas fa-paper-plane"></i> Native share</button><button class="btn btn-outline" id="shareWhatsAppBtn"><i class="fab fa-whatsapp"></i> WhatsApp</button><button class="btn btn-outline" id="copyShareBtn"><i class="fas fa-copy"></i> Copy text</button><button class="btn btn-secondary" id="shareImageBtn"><i class="fas fa-image"></i> Export image</button></div></div>
     </div>
 
     <!-- ===== JAVASCRIPT ===== -->
@@ -910,13 +882,12 @@
             ctx.font = '600 54px Segoe UI'; const lines = wrapCanvasText(ctx, payload.text || '', width - pad * 2); const height = Math.max(payload.imageUrl ? 1250 : 700, 390 + lines.length * 78 + (payload.imageUrl ? 500 : 0)); canvas.height = height;
             const bg = ctx.createLinearGradient(0, 0, width, height); bg.addColorStop(0, '#ff6b8a'); bg.addColorStop(1, '#ff8e53'); ctx.fillStyle = bg; ctx.fillRect(0, 0, width, height);
             if (payload.imageUrl) { try { const image = await new Promise((resolve, reject) => { const img = new Image(); img.crossOrigin = 'anonymous'; img.onload = () => resolve(img); img.onerror = reject; img.src = payload.imageUrl; }); const maxW = width - 200, maxH = 380, scale = Math.min(maxW / image.width, maxH / image.height), w = image.width * scale, h = image.height * scale, x = (width - w) / 2, y = height - maxH - 135; ctx.save(); ctx.beginPath(); ctx.roundRect(x, y, w, h, 20); ctx.clip(); ctx.drawImage(image, x, y, w, h); ctx.restore(); } catch (_) { /* Export the branded text card if an image cannot be loaded. */ } }
-            ctx.fillStyle = 'rgba(255,255,255,.14)';[[90, 100, 130], [970, 120, 190], [920, height - 80, 125], [130, height - 70, 170]].forEach(c => { ctx.beginPath(); ctx.arc(...c, 0, Math.PI * 2); ctx.fill(); });
+            ctx.fillStyle = 'rgba(255,255,255,.14)'; [[90,100,130],[970,120,190],[920,height - 80,125],[130,height - 70,170]].forEach(c => { ctx.beginPath(); ctx.arc(...c, 0, Math.PI * 2); ctx.fill(); });
             ctx.fillStyle = 'white'; ctx.textAlign = 'center'; ctx.font = '700 38px Segoe UI'; ctx.fillText('♥  DATE SPARK', width / 2, 105); ctx.fillStyle = 'rgba(255,255,255,.86)'; ctx.font = '600 27px Segoe UI'; ctx.fillText(payload.label.toUpperCase(), width / 2, 165);
             ctx.fillStyle = 'white'; ctx.font = '600 54px Segoe UI'; lines.forEach((line, i) => ctx.fillText(line, width / 2, 285 + i * 78)); ctx.font = '400 28px Segoe UI'; ctx.fillStyle = 'rgba(255,255,255,.86)'; ctx.fillText('A question worth lingering over.', width / 2, height - 78); return canvas;
         }
         async function shareImage(payload = sharePayload || getQuestionPayload(), downloadOnly = false) {
-            if (!payload) return; const canvas = await makeShareCanvas(payload); canvas.toBlob(async blob => {
-                if (!blob) return; const file = new File([blob], 'date-spark-question.png', { type: 'image/png' });
+            if (!payload) return; const canvas = await makeShareCanvas(payload); canvas.toBlob(async blob => { if (!blob) return; const file = new File([blob], 'date-spark-question.png', { type: 'image/png' });
                 try { if (!downloadOnly && navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) { await navigator.share({ title: payload.title, files: [file] }); showToast('Image shared!'); return; } } catch (_) { showToast('Image share was unavailable; downloading instead.', 'info'); }
                 const url = URL.createObjectURL(blob), link = document.createElement('a'); link.href = url; link.download = 'date-spark-question.png'; link.click(); setTimeout(() => URL.revokeObjectURL(url), 1000); showToast('Image downloaded!');
             }, 'image/png');
@@ -932,10 +903,10 @@
             const movieTitles = ['Titanic', 'Barbie', 'The Lion King', 'Frozen', 'Spider-Man', 'Black Panther', 'Avengers: Endgame', 'Mean Girls', 'The Hangover', 'Home Alone', 'Toy Story', 'Finding Nemo', 'The Incredibles', 'Shrek', 'Moana', 'The Notebook', 'Fast & Furious', 'Harry Potter and the Sorcerer\'s Stone', 'The Dark Knight', 'Inside Out', 'Jumanji', 'Jurassic Park', 'Avatar', 'Despicable Me', 'Coco', 'Ratatouille', 'Encanto', 'The Hunger Games', 'Twilight', 'The Devil Wears Prada', 'Legally Blonde', 'Clueless', '10 Things I Hate About You', 'Crazy Rich Asians', 'La La Land', 'The Greatest Showman', 'Mamma Mia!', 'A Star Is Born', 'The Princess Diaries', 'To All the Boys I\'ve Loved Before', 'Knives Out', 'Glass Onion', 'Dune', 'Oppenheimer', 'Everything Everywhere All at Once', 'The Batman', 'Top Gun: Maverick', 'Nope', 'Get Out', 'A Quiet Place', 'Scream', 'It', 'The Conjuring', 'Us', 'The Sixth Sense', 'The Exorcist', 'Beetlejuice', 'The Shining', 'The Ring', 'Coraline', 'The Matrix', 'John Wick', 'Mission: Impossible', 'Mad Max: Fury Road', 'Die Hard', 'The Bourne Identity', 'Gladiator', 'Kill Bill', 'Indiana Jones', 'Pirates of the Caribbean', 'Back to the Future', 'E.T.', 'The Goonies', 'The Breakfast Club', 'Grease', 'The Sound of Music', 'The Wizard of Oz', 'Casablanca', 'Singin\' in the Rain', 'The Godfather', 'Forrest Gump', 'The Truman Show', 'The Lord of the Rings', 'Star Wars', 'Guardians of the Galaxy', 'Iron Man', 'Wonder Woman', 'Deadpool', 'The Super Mario Bros. Movie', 'Minions', 'Kung Fu Panda', 'How to Train Your Dragon', 'The Lego Movie', 'Zootopia', 'Turning Red', 'Soul', 'Luca', 'Elemental', 'Paddington', 'The Parent Trap', 'Matilda', 'The Princess Bride', 'Night at the Museum', 'School of Rock', 'Elf'];
             const charades = {
                 Movies: movieTitles,
-                Comedy: ['Mean Girls', 'The Hangover', 'Legally Blonde', 'Clueless', 'The Devil Wears Prada', 'School of Rock', 'Elf', 'The Princess Bride', 'The Lego Movie', 'Night at the Museum', 'Henry Danger', 'Blended', 'The Wedding Party', 'Chief Daddy', 'Dumb and Dumber', 'Jenife', 'Merry Men', 'Playfull Kiss', 'Mr Queen', 'Kung fu Hustle', 'jackie', 'Tom and Jerry', 'Rush Hour', 'Ride Along', 'Bad Boys', 'Grown ups', 'Coming to america', 'Scary Movie', 'Mr Bones', 'Rick and Morty', 'Power Puff Girls', 'The Simpsons', 'Family Guy', 'South Park', 'The Office', 'Parks and Recreation', 'Friends', 'How I Met Your Mother', 'New Girl', 'Scrubs', 'Community', 'SpongBob SquarePants', '30 Rock', 'Veep', 'Teen Titans', 'Adventure Time', 'Regular Show', 'The Amazing World of Gumball', 'Fosters Home for Imaginary Friends', 'The Fairly OddParents', 'Kim Possible', 'Phineas and Ferb', 'The Proud Family', 'Recess', 'Ed, Edd n Eddy', 'Johnny Bravo'],
+                Comedy: ['Mean Girls', 'The Hangover', 'Legally Blonde', 'Clueless', 'The Devil Wears Prada', 'School of Rock', 'Elf', 'The Princess Bride', 'The Lego Movie', 'Night at the Museum', 'Henry Danger', 'Blended', 'The Wedding Party', 'Chief Daddy', 'Dumb and Dumber', 'Jenife', 'Merry Men', 'Playfull Kiss', 'Mr Queen', 'Kung fu Hustle', 'jackie', 'Tom and Jerry', 'Rush Hour', 'Ride Along', 'Bad Boys', 'Grown ups', 'Coming to america', 'Scary Movie', 'Mr Bones', 'Rick and Morty', 'Power Puff Girls', 'The Simpsons', 'Family Guy', 'South Park', 'The Office', 'Parks and Recreation', 'Friends', 'How I Met Your Mother', 'New Girl', 'Scrubs', 'Community', 'SpongBob SquarePants', '30 Rock', 'Veep', 'Teen Titans, 'Adventure Time', 'Regular Show', 'The Amazing World of Gumball', 'Fosters Home for Imaginary Friends', 'The Fairly OddParents', 'Kim Possible', 'Phineas and Ferb', 'The Proud Family', 'Recess', 'Ed, Edd n Eddy', 'Johnny Bravo'],
                 Animation: ['Frozen', 'Toy Story', 'Finding Nemo', 'Shrek', 'Moana', 'Coco', 'Ratatouille', 'Encanto', 'Inside Out', 'How to Train Your Dragon', 'Kung Fu Panda', 'The Incredibles', 'Shrek', 'Ratatouille', 'Coco', 'Inside Out', 'Turning Red', 'Soul', 'Luca', 'Elemental', 'Hotel Transylvania', 'The Addams Family', 'The Croods', 'The Boss Baby', 'The Secret Life of Pets', 'Sing', 'Zootopia', 'Moana', 'Frozen', 'Tangled', 'Brave', 'Mulan', 'Aladdin', 'Beauty and the Beast', 'The Little Mermaid', 'Cinderella', 'Snow White and the Seven Dwarfs'],
                 Superheroes: ['Spider-Man', 'Black Panther', 'Avengers: Endgame', 'The Dark Knight', 'The Batman', 'Iron Man', 'Wonder Woman', 'Deadpool', 'Guardians of the Galaxy', 'The Incredibles', 'Superman', 'The Flash', 'Aquaman', 'Thor', 'Captain America', 'Hulk', 'Doctor Strange', 'Black Widow', 'Ant-Man', 'Wolverine', 'X-Men', 'Fantastic Four', 'Green Lantern', 'Shazam!', 'The Suicide Squad', 'Moon Night'],
-                Romance: ['Titanic', 'The Notebook', '10 Things I Hate About You', 'Crazy Rich Asians', 'La La Land', 'Mamma Mia!', 'A Star Is Born', 'The Princess Diaries', 'To All the Boys I\'ve Loved Before', 'Twilight', 'The Summer I Turned Pretty', 'Kissing Booth', 'She is the Man', 'Juli and The Phantoms', 'Never Have I Ever', 'Xo Kitty'],
+                Romance: ['Titanic', 'The Notebook', '10 Things I Hate About You', 'Crazy Rich Asians', 'La La Land', 'Mamma Mia!', 'A Star Is Born', 'The Princess Diaries', 'To All the Boys I\'ve Loved Before', 'Twilight', 'The Summer I Turned Pretty',  'Kissing Booth', 'She is the Man', 'Juli and The Phantoms', 'Never Have I Ever', 'Xo Kitty'  ],
                 Action: ['Fast & Furious', 'Top Gun: Maverick', 'John Wick', 'Mission: Impossible', 'Mad Max: Fury Road', 'Die Hard', 'Gladiator', 'Kill Bill', 'Indiana Jones', 'Pirates of the Caribbean', 'Taken', 'Game of Thrones', 'Bee Man', 'The Transporter'],
                 Horror: ['Nope', 'Get Out', 'A Quiet Place', 'Scream', 'It', 'The Conjuring', 'Us', 'The Sixth Sense', 'The Exorcist', 'The Shining', 'Annabell', 'Chuky', 'Madam koin koin', 'parasite', 'Colony', 'Happiness', 'Night Has Come', 'The Wailing', 'The Host', 'Train to Busan', 'The Witch', 'Hereditary', 'Midsommar', 'The Babadook', 'It Follows', 'The Ring', 'The Grudge', 'Insidious', 'Sinister', 'The Others', 'The Omen', 'The Amityville Horror', 'Neuforious', 'Evil Dead'],
                 'Classic Movies': ['The Wizard of Oz', 'Casablanca', 'Singin\' in the Rain', 'The Godfather', 'Grease', 'The Sound of Music', 'Back to the Future', 'E.T.', 'The Goonies', 'The Breakfast Club', 'Merlin', 'Legend of the Seeker'],
@@ -944,176 +915,191 @@
                 Random: movieTitles
             };
             return {
-                truth: expand(`Who is your secret crush right now ?
-                    Who was your last crush ?
-                        Have you ever had a crush on a friend ?
-                        Who in this group would you kiss ?
-                        What is your biggest turn - on ?
-                        What is your biggest turn - off ?
-                        Have you ever flirted with someone just for fun ?
-                            Who is the most attractive person you've ever met?
-Have you ever liked someone you shouldn't have?
-What's the boldest thing you've done to get someone's attention?
-Have you ever sent a risky message?
-Have you ever deleted a chat so nobody would see it?
-Who was your worst kiss?
-What's your biggest dating red flag?
-What's your biggest green flag?
-Have you ever kissed someone you just met?
-Have you ever liked two people at the same time?
-Who was your most unexpected crush?
-Have you ever pretended not to like someone?
-What's the most embarrassing thing you've done around a crush?
-Have you ever stalked someone's social media?
-Have you ever been caught checking someone out?
-What's the most attractive quality in a person?
-Have you ever flirted with someone who was taken?
-What's the boldest text you've ever sent?
-Have you ever had feelings for a friend?
-What's your most embarrassing dating experience?
-Have you ever been jealous over someone?
-Have you ever lied about having a crush?
-Who here has the best smile?
-Who here has the best eyes?
-Who here would you go on a date with?
-Have you ever wanted to kiss someone but didn't?
-What's your ideal date?
-What's the most romantic thing someone has done for you?
-Have you ever had a secret admirer?
-Have you ever been someone's secret admirer?
-Have you ever flirted through DMs?
-Have you ever regretted rejecting someone?
-Have you ever wanted an ex back?
-What's your most toxic dating habit?
-Have you ever caught feelings unexpectedly?
-What's something that instantly makes someone attractive?
-Have you ever changed your outfit because someone you liked would be there?
-Have you ever purposely posted something hoping your crush would see it?
-Have you ever imagined dating someone in this room ?
-                    What's the longest you've secretly liked someone?
-Have you ever lied to your friends about who you liked?
-What's something you've never told your crush?
-If you could kiss anyone here, who would it be? 👀`.trim().split(/\r?\n/)),
-                dare: expand(['Give a lap dance to someone in this room', 'Do your most dramatic movie-trailer voice', 'I Dare you to break up with someone using bible verse', 'i dare you to flirt with someone using a bible verse', 'Tell a story using only sound effects', 'i dare you to send 30k in this room or strip three clothing', 'I dare you to pour out your heart to your crush in this room'].concat(`Give someone your best pickup line.
-Wink at someone in the room.
-Give the person beside you a flirty compliment.
-Do your best seductive model walk.
-Stare into someone's eyes for 20 seconds.
-Send "Hey stranger 👀" to someone.
-Call someone and ask them to rate your attractiveness from 1–10.
-Let the group choose your next WhatsApp status.
-Do your best romantic movie scene.
-Give someone a dramatic love confession.
-                        Send ❤️ to the 5th person in your WhatsApp chats.
-Dance for 30 seconds.
-Let someone choose your selfie pose.
-Say your best pickup line with a straight face.
-Pretend you're on a first date with someone in the room.
-Give someone three compliments without repeating yourself.
-Call your best friend and ask if you're dateable.
-Send "I have something to tell you 👀" to someone.
-Let someone choose an emoji you must use for 10 minutes.
-Give someone your best flirtatious stare.
-Act jealous for 30 seconds.
-Let the group give you a ridiculous romantic nickname.
-Recreate your most awkward date.
-Pretend to propose to someone.
-Give someone a 20-second romantic speech.
-                    Send 😍 to someone you haven't talked to today.
-Let someone choose your profile picture for 10 minutes.
-Do a dramatic hair flip.
-Compliment someone without using "beautiful," "handsome," or "cute."
-Pretend you're trying to impress your crush.
-Read your last flirty message aloud.
-Let another player choose a harmless text for you to send.
-Make a fake dating profile for yourself and read it aloud.
-Tell someone, "You're dangerously attractive."
-Dance like you're trying to impress your crush.
-Give someone a cheesy pickup line.
-Make eye contact with someone and wink three times.
-Pretend you're a celebrity being interviewed about your love life.
-Call someone and say, "I miss you," then reveal it's a dare.
-Let the group choose someone you have to compliment.
-Give someone your best romantic movie stare.
-Pretend someone in the room is your secret crush.
-Tell the group your best flirting technique.
-Let someone ask you one bonus truth question.
-Take a silly selfie chosen by the group.
-Sing a romantic song dramatically.
-Act out how you behave when you see your crush.
-Give someone a compliment that sounds like flirting.
-Let the group choose one person you must have a 30-second conversation with.
-Final boss: Choose someone and give them your most outrageous pickup line. 😭 'i dare you to send the person by your right 20k or strip 2 clothing', 'i dare you to do a seductive dance move for 5mins', 'i dare you to only speak in poetry for the next three rounds of the game`).trim().split(/\r?\n/)),
-                wyr: choices(['Always have breakfast in bed|Always get a surprise playlist', 'Explore a new city|Return to a favorite place', 'Cook together|Order a feast together', 'Have a long picnic|Take a midnight walk', 'Be known for kindness|Be known for courage', 'Read a story aloud|Make up a story together', 'Have a cabin weekend|Have a beach weekend', 'Get one perfect photo|Get one perfect memory', 'Plan every detail|Follow a spontaneous plan', 'Receive a handwritten note|Receive an unexpected call', 'Win every game|Make everyone laugh'].concat(`Would you rather kiss your crush or let your crush kiss you ? 👀
-                    Would you rather go on a secret date or have a secret admirer ?
-                        Would you rather send a risky text or receive one unexpectedly ?
-                        Would you rather kiss your ex or kiss your crush ?
-                        Would you rather be caught flirting or catch someone flirting with you ?
-                            Would you rather have your crush read your DMs or your best friend read your search history? 😭
-                Would you rather go on a date with your celebrity crush or your current crush?
-Would you rather have amazing chemistry with someone but never date them or date someone you have no chemistry with?
-Would you rather make the first move or have someone make the first move on you?
-Would you rather kiss someone you've known for years or someone you've just met?
-Would you rather accidentally send a flirty text to your parent or your crush's parent? 💀
-Would you rather have your crush see your embarrassing photos or your embarrassing messages?
-Would you rather be stuck in an elevator with your crush or go on a 3-hour road trip with them ?
-                    Would you rather have your crush confess first or confess your feelings first?
-Would you rather date someone extremely attractive but boring or someone average- looking but incredibly fun ?
-                Would you rather have one unforgettable kiss or one unforgettable date ?
-                    Would you rather your crush know you've liked them for years or never know at all?
-Would you rather be caught staring at your crush or be caught talking about them ?
-                Would you rather have to flirt with someone chosen by the group or answer five brutally honest questions about your love life ?
-🔥 Would you rather kiss the person you find most attractive here or reveal who it is ?`).trim().split(/\r?\n/)),
-                nhie: expand(`Never have I ever kissed someone I wasn't supposed to.
-Never have I ever kissed someone on the first date.
-Never have I ever had a crush on my best friend.
-Never have I ever flirted with someone to make another person jealous.
-Never have I ever sent a risky text.
-Never have I ever deleted a chat to hide it.
-Never have I ever stalked my crush's social media.
-Never have I ever liked someone who was taken.
-Never have I ever flirted with someone through DMs.
-Never have I ever lied about where I was because I was meeting someone.
-Never have I ever kissed someone I had just met.
-Never have I ever pretended not to like someone.
-Never have I ever had two crushes at once.
-Never have I ever made the first move.
-Never have I ever regretted not making a move.
-Never have I ever been caught checking someone out.
-Never have I ever caught someone checking me out.
-Never have I ever stayed up all night talking to someone I liked.
-Never have I ever had a secret admirer.
-Never have I ever been someone's secret admirer.
-Never have I ever purposely posted a picture for one specific person.
-Never have I ever checked someone's relationship status before flirting.
-Never have I ever had a crush on a friend's sibling.
-Never have I ever flirted with an ex.
-Never have I ever wanted an ex back.
-Never have I ever kissed an ex after breaking up.
-Never have I ever secretly wanted someone who was off - limits.
-Never have I ever lied about having a crush.
-Never have I ever practiced what I was going to say to my crush.
-Never have I ever changed my outfit because someone I liked would be there.
-Never have I ever purposely sat beside someone because I liked them.
-Never have I ever given someone my number because I found them attractive.
-Never have I ever asked a friend to investigate my crush.
-Never have I ever searched someone's name repeatedly because I liked them.
-Never have I ever received a message that made me blush.
-Never have I ever sent a ❤️ hoping someone would understand the hint.
-Never have I ever fallen for someone after saying I wouldn't.
-Never have I ever flirted with someone I knew was bad news.
-Never have I ever had feelings for someone I couldn't date.
-Never have I ever imagined dating someone in this room.
-Never have I ever lied about being jealous.
-Never have I ever gotten nervous around my crush.
-Never have I ever reread an old romantic conversation.
-Never have I ever checked if my crush was online.
-Never have I ever stayed in a conversation because I found someone attractive.
-Never have I ever had a crush on someone much older than me.
-Never have I ever secretly hoped someone would ask me out.
-Never have I ever wanted to kiss someone but chickened out.
-Never have I ever developed feelings for someone unexpectedly.
-Never have I ever wanted to kiss someone in this room. 👀🔥`.trim().split(/\r?\n/)),
+                truth: expand([ 'Who is your secret crush right now?', 'Who was your last crush?', 'Have you ever had a crush on a friend?', 'Who in this group would you kiss?',
+'What is your biggest turn-on?',
+'What is your biggest turn-off?',
+'Have you ever flirted with someone just for fun?',
+'Who is the most attractive person you\'ve ever met?',
+'Have you ever liked someone you shouldn\'t have?',
+'What\'s the boldest thing you\'ve done to get someone\'s attention?',
+'Have you ever sent a risky message?',
+'Have you ever deleted a chat so nobody would see it?',
+'Who was your worst kiss?',
+'What\'s your biggest dating red flag?',
+'What\'s your biggest green flag?',
+'Have you ever kissed someone you just met?',
+'Have you ever liked two people at the same time?',
+'Who was your most unexpected crush?',
+'Have you ever pretended not to like someone?',
+'What\'s the most embarrassing thing you\'ve done around a crush?',
+'Have you ever stalked someone\'s social media?',
+'Have you ever been caught checking someone out?',
+'What\'s the most attractive quality in a person?',
+'Have you ever flirted with someone who was taken?'
+'What\'s the boldest text you\'ve ever sent?',
+'Have you ever had feelings for a friend?',
+'What\'s your most embarrassing dating experience?',
+'Have you ever been jealous over someone?',
+'Have you ever lied about having a crush?',
+'Who here has the best smile?',
+'Who here has the best eyes?',
+'Who here would you go on a date with?',
+'Have you ever wanted to kiss someone but didn\'t?',
+'What\'s your ideal date?',
+'What\'s the most romantic thing someone has done for you?'
+'Have you ever had a secret admirer?',
+'Have you ever been someone\'s secret admirer?',
+'Have you ever flirted through DMs?',
+'Have you ever regretted rejecting someone?',
+'Have you ever wanted an ex back?',
+'What\'s your most toxic dating habit?',
+'Have you ever caught feelings unexpectedly?',
+'What\'s something that instantly makes someone attractive?',
+'Have you ever changed your outfit because someone you liked would be there?',
+'Have you ever purposely posted something hoping your crush would see it?',
+'Have you ever imagined dating someone in this room?'
+'What\'s the longest you\'ve secretly liked someone?',
+'Have you ever lied to your friends about who you liked?',
+'What\'s something you\'ve never told your crush?',
+'If you could kiss anyone here, who would it be? 👀'    ]),
+                dare: expand(['Give a lap dance to someone in this room', 'Do your most dramatic movie-trailer voice', 'I Dare you to break up with someone using bible verse', 'i dare you to flirt with someone using a bible verse', 'Tell a story using only sound effects',  'i dare you to send 30k in this room or strip three clothing', 'I dare you to pour out your heart to your crush in this room', 'Give someone your best pickup line.',
+'Wink at someone in the room.',
+'Give the person beside you a flirty compliment.',
+'Do your best seductive model walk.',
+'Stare into someone\'s eyes for 20 seconds.',
+'Send "Hey stranger 👀" to someone.',
+'Call someone and ask them to rate your attractiveness from 1–10.',
+'Let the group choose your next WhatsApp status.',
+'Do your best romantic movie scene.',
+'Give someone a dramatic love confession.',
+'Send ❤️ to the 5th person in your WhatsApp chats.',
+'Dance for 30 seconds.',
+'Let someone choose your selfie pose.',
+'Say your best pickup line with a straight face.',
+'Pretend you\'re on a first date with someone in the room.',
+'Give someone three compliments without repeating yourself.',
+'Call your best friend and ask if you\'re dateable.',
+'Send "I have something to tell you 👀" to someone.',
+'Let someone choose an emoji you must use for 10 minutes.',
+'Give someone your best flirtatious stare.',
+'Act jealous for 30 seconds.',
+'Let the group give you a ridiculous romantic nickname.',
+'Recreate your most awkward date.'
+'Pretend to propose to someone.',
+'Give someone a 20-second romantic speech.',
+'Send 😍 to someone you haven\'t talked to today.',
+'Let someone choose your profile picture for 10 minutes.',
+'Do a dramatic hair flip.',
+'Compliment someone without using "beautiful," "handsome," or "cute."'
+'Pretend you\'re trying to impress your crush.',
+'Read your last flirty message aloud.',
+'Let another player choose a harmless text for you to send.',
+'Make a fake dating profile for yourself and read it aloud.',
+'Tell someone, "You\'re dangerously attractive."',
+'Dance like you\'re trying to impress your crush.',
+'Give someone a cheesy pickup line.',
+'Make eye contact with someone and wink three times.',
+'Pretend you\'re a celebrity being interviewed about your love life.',
+'Call someone and say, "I miss you," then reveal it\'s a dare.',
+'Let the group choose someone you have to compliment.',
+'Give someone your best romantic movie stare.',
+'Pretend someone in the room is your secret crush.',
+'Tell the group your best flirting technique.',
+'Let someone ask you one bonus truth question.',
+'Take a silly selfie chosen by the group.',
+'Sing a romantic song dramatically.',
+'Act out how you behave when you see your crush.',
+'Give someone a compliment that sounds like flirting.',
+'Let the group choose one person you must have a 30-second conversation with.',
+'Final boss: Choose someone and give them your most outrageous pickup line. 😭 ',
+'i dare you to send the person by your right 20k or strip 2 clothing',
+'i dare you to do a seductive dance move for 5mins',
+'i dare you to only speak in poetry for the next three rounds of the game'
+]),
+                wyr: choices([
+                    'Always have breakfast in bed|Always get a surprise playlist',
+                    'Explore a new city|Return to a favorite place',
+                    'Cook together|Order a feast together',
+                    'Have a long picnic|Take a midnight walk',
+                    'Be known for kindness|Be known for courage',
+                    'Read a story aloud|Make up a story together',
+                    'Have a cabin weekend|Have a beach weekend',
+                    'Get one perfect photo|Get one perfect memory',
+                    'Plan every detail|Follow a spontaneous plan',
+                    'Receive a handwritten note|Receive an unexpected call',
+                    'Win every game|Make everyone laugh'
+                ]),
+                wouldYouRather: [
+                    'kiss your crush or let your crush kiss you ? 👀',
+                    'go on a secret date or have a secret admirer ?',
+                    'send a risky text or receive one unexpectedly ?',
+                    'kiss your ex or kiss your crush ?',
+                    'be caught flirting or catch someone flirting with you ?',
+                    'have your crush read your DMs or your best friend read your search history? 😭',
+                    'go on a date with your celebrity crush or your current crush?',
+                    'have amazing chemistry with someone but never date them or date someone you have no chemistry with?'
+'Would you rather make the first move or have someone make the first move on you?',
+'Would you rather kiss someone you've known for years or someone you've just met?',
+'Would you rather accidentally send a flirty text to your parent or your crush's parent? 💀',
+'Would you rather have your crush see your embarrassing photos or your embarrassing messages?',
+'Would you rather be stuck in an elevator with your crush or go on a 3-hour road trip with them ?',
+'Would you rather have your crush confess first or confess your feelings first?'
+'Would you rather date someone extremely attractive but boring or someone average- looking but incredibly fun ?',
+'Would you rather have one unforgettable kiss or one unforgettable date ?',
+'Would you rather your crush know you've liked them for years or never know at all?',
+'Would you rather be caught staring at your crush or be caught talking about them ?',
+'Would you rather have to flirt with someone chosen by the group or answer five brutally honest questions about your love life ?',
+'🔥 Would you rather kiss the person you find most attractive here or reveal who it is ?']]),
+                nhie: expand(['Never have I ever kissed someone I wasn't supposed to.',
+'Never have I ever kissed someone on the first date.',
+'Never have I ever had a crush on my best friend.',
+'Never have I ever flirted with someone to make another person jealous.',
+'Never have I ever sent a risky text.',
+'Never have I ever deleted a chat to hide it.',
+'Never have I ever stalked my crush's social media.',
+'Never have I ever liked someone who was taken.',
+'Never have I ever flirted with someone through DMs.',
+'Never have I ever lied about where I was because I was meeting someone.',
+'Never have I ever kissed someone I had just met.',
+'Never have I ever pretended not to like someone.',
+'Never have I ever had two crushes at once.',
+'Never have I ever made the first move.',
+'Never have I ever regretted not making a move.',
+'Never have I ever been caught checking someone out.',
+'Never have I ever caught someone checking me out.',
+'Never have I ever stayed up all night talking to someone I liked.',
+'Never have I ever had a secret admirer.',
+'Never have I ever been someone's secret admirer.',
+'Never have I ever purposely posted a picture for one specific person.',
+'Never have I ever checked someone's relationship status before flirting.',
+'Never have I ever had a crush on a friend's sibling.',
+'Never have I ever flirted with an ex.',
+'Never have I ever wanted an ex back.',
+'Never have I ever kissed an ex after breaking up.',
+'Never have I ever secretly wanted someone who was off-limits.',
+'Never have I ever lied about having a crush.',
+'Never have I ever practiced what I was going to say to my crush.',
+'Never have I ever changed my outfit because someone I liked would be there.',
+'Never have I ever purposely sat beside someone because I liked them.',
+'Never have I ever given someone my number because I found them attractive.',
+'Never have I ever asked a friend to investigate my crush.',
+'Never have I ever searched someone's name repeatedly because I liked them.',
+'Never have I ever received a message that made me blush.',
+'Never have I ever sent a ❤️ hoping someone would understand the hint.',
+'Never have I ever fallen for someone after saying I wouldn't.',
+'Never have I ever flirted with someone I knew was bad news.',
+'Never have I ever had feelings for someone I couldn't date.',
+'Never have I ever imagined dating someone in this room.',
+'Never have I ever lied about being jealous.',
+'Never have I ever gotten nervous around my crush.',
+'Never have I ever reread an old romantic conversation.',
+'Never have I ever checked if my crush was online.',
+'Never have I ever stayed in a conversation because I found someone attractive.',
+'Never have I ever had a crush on someone much older than me.',
+'Never have I ever secretly hoped someone would ask me out.',
+'Never have I ever wanted to kiss someone but chickened out.',
+'Never have I ever developed feelings for someone unexpectedly.',
+'Never have I ever wanted to kiss someone in this room. 👀🔥']]),
                 redgreen: expand(['They remember the tiny details you share', 'They can apologize without turning it into a debate', 'They make every plan without asking what you want', 'They cheer for your wins even when they are small', 'They joke about a boundary after you set it', 'They communicate when plans change', 'They expect instant replies at all hours', 'They are kind to people when there is nothing to gain', 'They make room for your friends and hobbies', 'They pressure you to share something private'], '?'),
                 likely: expand(['Who is most likely to start a dance party', 'Who is most likely to remember the charger', 'Who is most likely to make friends in a queue', 'Who is most likely to get lost using maps', 'Who is most likely to adopt a stray plant', 'Who is most likely to suggest dessert first', 'Who is most likely to win a trivia round', 'Who is most likely to cry at a sweet movie', 'Who is most likely to plan the perfect surprise', 'Who is most likely to send the first meme', 'Who is most likely to get someone pregnant/get pregnant', 'Who is most likely to do ritual'], '?'),
                 charades
@@ -1136,7 +1122,7 @@ Never have I ever wanted to kiss someone in this room. 👀🔥`.trim().split(/\
             const selected = gameState.choices[prompt];
             const choice = (value, title, detail = '') => `<button class="choice-btn ${selected === value ? 'selected' : ''}" data-choice="${value}" aria-pressed="${selected === value}"><b>${title}</b>${escapeHtml(detail)}</button>`;
             const likelyPlayers = gameState.players.length ? gameState.players : ['Me', 'You', 'Everyone'];
-            const body = type === 'wyr' ? (() => { const [a, b] = prompt.split('|'); return `<div class="choice-pair">${choice('A', 'A', a)}<span>or</span>${choice('B', 'B', b)}</div>`; })() : `<p class="game-prompt">${escapeHtml(prompt)}</p>${type === 'nhie' ? `<div class="choice-pair compact">${choice('Have', 'I have')}${choice('Never', 'Never')}</div>` : ''}${type === 'redgreen' ? `<div class="choice-pair compact">${choice('Red flag', 'Red flag')}${choice('Green flag', 'Green flag')}</div>` : ''}${type === 'likely' ? `<label class="field-label">Players (separate names with commas)<input id="likelyPlayers" maxlength="180" value="${escapeHtml(gameState.players.join(', '))}" placeholder="Alex, Sam, Taylor"></label><div class="choice-pair compact">${likelyPlayers.map(name => choice(name, name)).join('')}</div>` : ''}`;
+            const body = type === 'wyr' ? (() => { const [a,b] = prompt.split('|'); return `<div class="choice-pair">${choice('A', 'A', a)}<span>or</span>${choice('B', 'B', b)}</div>`; })() : `<p class="game-prompt">${escapeHtml(prompt)}</p>${type === 'nhie' ? `<div class="choice-pair compact">${choice('Have', 'I have')}${choice('Never', 'Never')}</div>` : ''}${type === 'redgreen' ? `<div class="choice-pair compact">${choice('Red flag', 'Red flag')}${choice('Green flag', 'Green flag')}</div>` : ''}${type === 'likely' ? `<label class="field-label">Players (separate names with commas)<input id="likelyPlayers" maxlength="180" value="${escapeHtml(gameState.players.join(', '))}" placeholder="Alex, Sam, Taylor"></label><div class="choice-pair compact">${likelyPlayers.map(name => choice(name, name)).join('')}</div>` : ''}`;
             const modeControls = type === 'truth' ?
                 `<div class="mode-switch">
                     <button data-mode="truth" class="${gameState.mode === 'truth' ? 'active' : ''}">Truth</button>
@@ -1148,7 +1134,7 @@ Never have I ever wanted to kiss someone in this room. 👀🔥`.trim().split(/\
             content.innerHTML = `<span class="game-kicker">SPECIALS</span><h2 id="gameTitle">${titles[type]}</h2>${modeControls}${body}${gameActions()}`;
         }
         function renderCharades() { const c = gameState.charades, words = specialBanks.charades[c.category], word = words[c.wordIndex % words.length], timerLabel = c.running ? 'Pause' : (c.seconds === 60 ? 'Start 60s' : 'Resume'); document.getElementById('gameContent').innerHTML = `<span class="game-kicker">SPECIALS</span><h2 id="gameTitle">Charades</h2><div class="category-tabs">${Object.keys(specialBanks.charades).map(x => `<button data-category="${x}" class="${x === c.category ? 'active' : ''}" ${c.running ? 'disabled' : ''}>${x}</button>`).join('')}</div><div class="timer-ring"><strong>${c.seconds}</strong><span>seconds</span></div><p class="game-prompt charade-word">${escapeHtml(word)}</p><p class="scoreline" aria-live="polite">Score: <b>${c.score}</b></p><div class="game-actions"><button class="btn btn-success" data-game-action="correct">Correct +1</button><button class="btn btn-outline" data-game-action="skip">Skip</button><button class="btn btn-outline" data-game-action="next-charade">Next</button><button class="btn btn-primary" data-game-action="timer">${timerLabel}</button><button class="action-btn" data-game-action="share"><i class="fas fa-share-alt"></i> Share</button><button class="action-btn" data-game-action="image"><i class="fas fa-image"></i> Export</button><button class="action-btn" data-game-action="reset">Reset</button></div>`; }
-        function renderAnonymous() { const inbox = safeParse(localStorage.getItem('dateSparkAnonymousInbox'), []); document.getElementById('gameContent').innerHTML = `<span class="game-kicker">SPECIALS</span><h2 id="gameTitle">Anonymous Note</h2><p class="disclosure"><i class="fas fa-circle-info"></i> Demo only: notes and replies stay in this browser. This is not an anonymous service.</p><label class="field-label">Create a prompt<input id="anonymousPrompt" maxlength="180" placeholder="What made you smile today?"></label><div class="game-actions"><button class="btn btn-primary" data-game-action="create-note">Create link</button></div><div id="noteLink" class="link-display" hidden></div><label class="field-label">Add a demo response<input id="anonymousReply" maxlength="240" placeholder="Write a kind reply…"></label><div class="game-actions"><button class="btn btn-secondary" data-game-action="save-reply">Save reply</button><button class="action-btn" data-game-action="clear-inbox">Clear inbox</button></div><h3 class="inbox-title">Local inbox (${inbox.length})</h3><div class="inbox">${inbox.length ? inbox.map((x, i) => `<div><b>${escapeHtml(x.prompt)}</b><p>${escapeHtml(x.reply)}</p><button data-delete-note="${i}" aria-label="Delete reply"><i class="fas fa-trash"></i></button></div>`).join('') : '<p>No responses yet — your demo inbox is ready.</p>'}</div>`; }
+        function renderAnonymous() { const inbox = safeParse(localStorage.getItem('dateSparkAnonymousInbox'), []); document.getElementById('gameContent').innerHTML = `<span class="game-kicker">SPECIALS</span><h2 id="gameTitle">Anonymous Note</h2><p class="disclosure"><i class="fas fa-circle-info"></i> Demo only: notes and replies stay in this browser. This is not an anonymous service.</p><label class="field-label">Create a prompt<input id="anonymousPrompt" maxlength="180" placeholder="What made you smile today?"></label><div class="game-actions"><button class="btn btn-primary" data-game-action="create-note">Create link</button></div><div id="noteLink" class="link-display" hidden></div><label class="field-label">Add a demo response<input id="anonymousReply" maxlength="240" placeholder="Write a kind reply…"></label><div class="game-actions"><button class="btn btn-secondary" data-game-action="save-reply">Save reply</button><button class="action-btn" data-game-action="clear-inbox">Clear inbox</button></div><h3 class="inbox-title">Local inbox (${inbox.length})</h3><div class="inbox">${inbox.length ? inbox.map((x,i) => `<div><b>${escapeHtml(x.prompt)}</b><p>${escapeHtml(x.reply)}</p><button data-delete-note="${i}" aria-label="Delete reply"><i class="fas fa-trash"></i></button></div>`).join('') : '<p>No responses yet — your demo inbox is ready.</p>'}</div>`; }
         // ===== LET THEM SAY IT: owner-only Supabase inbox =====
         const anonymousState = { inbox: null, messages: [], filter: 'all', loading: false, creating: false };
         function getAnonymousClient() {

@@ -874,6 +874,11 @@
   .anonymous-message img { display: block; width: min(100%, 360px); max-height: 310px; margin: 12px 0; object-fit: contain; border-radius: 9px; background: #f5f4f6; }
   .anonymous-message-actions { justify-content: flex-start; }
   .anonymous-message-actions .action-btn { min-height: 38px; }
+  .btn-reveal-sender { color: #fff !important; background: var(--gradient) !important; }
+  .btn-free-reveal { color: #0f766e !important; background: #d1fae5 !important; }
+  .anonymous-sender-name, .anonymous-identity-unavailable { padding: 8px 11px; border-radius: 9px; font-size: 13px; font-weight: 700; }
+  .anonymous-sender-name { color: #166534; background: #dcfce7; }
+  .anonymous-identity-unavailable { color: #78716c; background: #f5f5f4; }
   .danger-action { color: #bd3647 !important; }
   .anonymous-empty, .anonymous-loading { padding: 34px 20px; text-align: center; color: #777; border: 1px dashed #dfd6d9; border-radius: 14px; }
   .anonymous-empty i { display: block; margin-bottom: 10px; color: #ff7893; font-size: 27px; }

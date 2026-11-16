@@ -80,6 +80,15 @@
         const message = document.getElementById('loginMessage');
         const submitBtn = document.getElementById('loginSubmit');
 
+        const loginReason = new URLSearchParams(window.location.search).get('reason');
+        if (loginReason === 'inactive') {
+            message.className = 'form-message success';
+            message.textContent = 'You were signed out after 30 minutes without activity. Please sign in again.';
+        } else if (loginReason === 'suspended') {
+            message.className = 'form-message error';
+            message.textContent = 'This account is currently unavailable. Please contact Date Spark support.';
+        }
+
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
 

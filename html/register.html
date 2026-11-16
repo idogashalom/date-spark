@@ -18,6 +18,15 @@
 
                     <input
                         type="text"
+                        id="regFullName"
+                        placeholder="Your name"
+                        autocomplete="name"
+                        maxlength="100"
+                        required
+                    >
+
+                    <input
+                        type="text"
                         id="regUsername"
                         placeholder="Username"
                         autocomplete="username"
@@ -84,6 +93,7 @@
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
 
+            const fullName = document.getElementById('regFullName').value;
             const username = document.getElementById('regUsername').value;
             const email = document.getElementById('regEmail').value;
             const password = document.getElementById('regPassword').value;
@@ -99,7 +109,7 @@
             submitBtn.disabled = true;
             submitBtn.value = 'Creating account...';
 
-            const result = await AUTH.register(username, email, password);
+            const result = await AUTH.register(fullName, username, email, password);
 
             if (result.success) {
                 message.className = 'form-message success';

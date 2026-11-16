@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="noindex, nofollow">
+    <title>Date Spark Admin</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/css/admin.css">
+</head>
+<body>
+    <div class="admin-shell" id="adminShell" hidden>
+        <aside class="sidebar" id="sidebar" aria-label="Admin navigation">
+            <a class="brand" href="/index.html" aria-label="Date Spark home"><span class="brand-mark"><i class="fa-solid fa-heart"></i></span><span>Date<span>Spark</span><small>Admin</small></span></a>
+            <nav class="section-nav">
+                <button class="nav-item is-active" data-section="overview"><i class="fa-solid fa-grid-2"></i> Overview</button>
+                <button class="nav-item" data-section="users"><i class="fa-solid fa-users"></i> Users</button>
+                <button class="nav-item" data-section="activity"><i class="fa-solid fa-clock-rotate-left"></i> Activity</button>
+                <button class="nav-item" data-section="messages"><i class="fa-solid fa-envelope-open-text"></i> Anonymous messages</button>
+                <button class="nav-item" data-section="access"><i class="fa-solid fa-key"></i> Free reveal access</button>
+                <button class="nav-item" data-section="reports"><i class="fa-solid fa-chart-line"></i> Reports</button>
+            </nav>
+            <div class="sidebar-footer"><a href="/index.html"><i class="fa-solid fa-arrow-left"></i> Open Date Spark</a><button id="signOutButton"><i class="fa-solid fa-right-from-bracket"></i> Sign out</button></div>
+        </aside>
+
+        <main class="main-content">
+            <header class="topbar"><button class="menu-button" id="menuButton" aria-label="Open menu" aria-controls="sidebar" aria-expanded="false"><i class="fa-solid fa-bars"></i></button><div><p class="eyebrow">DATE SPARK CONTROL ROOM</p><h1 id="pageTitle">Overview</h1></div><div class="admin-profile"><span class="avatar" id="adminInitials">A</span><span id="adminName">Administrator</span></div></header>
+            <div id="dashboardError" class="dashboard-error" hidden></div>
+
+            <section class="admin-section is-active" data-panel="overview">
+                <div class="section-heading"><div><h2>Good to see you</h2><p>Live application figures from Supabase.</p></div><button class="secondary-button" data-refresh><i class="fa-solid fa-rotate"></i> Refresh</button></div>
+                <div class="metric-grid" id="metricGrid" aria-live="polite"></div>
+                <div class="dashboard-grid"><article class="panel chart-panel"><div class="panel-heading"><div><h3>Growth and activity</h3><p>Last 30 days</p></div><span class="legend"><i></i> Registrations <i class="login-dot"></i> Logins</span></div><div class="bar-chart" id="overviewChart"></div></article><article class="panel"><div class="panel-heading"><div><h3>Recent activity</h3><p>Latest recorded account events</p></div><button class="text-button" data-go-to="activity">View all</button></div><div class="activity-list" id="recentActivity"></div></article></div>
+                <div class="dashboard-grid compact-grid"><article class="panel insight-panel"><i class="fa-solid fa-user-clock"></i><div><h3 id="activeUsersSummary">0 active users</h3><p>Active means a non-suspended account with meaningful activity in the last 30 minutes.</p></div></article><article class="panel insight-panel"><i class="fa-solid fa-shield-heart"></i><div><h3 id="revealSummary">0 verified reveals</h3><p>Only provider-verified ₦500 payments count as paid reveals and revenue.</p></div></article></div>
+            </section>
+
+            <section class="admin-section" data-panel="users">
+                <div class="section-heading"><div><h2>User management</h2><p>Search accounts, review activity, and suspend access when needed.</p></div><button class="secondary-button" id="exportUsers"><i class="fa-solid fa-file-csv"></i> Export CSV</button></div>
+                <div class="toolbar"><label class="search-field"><i class="fa-solid fa-magnifying-glass"></i><input id="userSearch" type="search" placeholder="Search by name, username, or email"></label><select id="userStatusFilter" aria-label="Filter user status"><option value="all">All statuses</option><option value="active">Active</option><option value="suspended">Suspended</option></select></div>
+                <div class="panel table-panel"><div class="table-scroll"><table><thead><tr><th>User</th><th>Registered</th><th>Last activity</th><th>Logins loaded</th><th>Status</th><th>Actions</th></tr></thead><tbody id="usersTable"></tbody></table></div></div>
+            </section>
+
+            <section class="admin-section" data-panel="activity">
+                <div class="section-heading"><div><h2>Activity and login monitoring</h2><p>Events are recorded by authenticated clients and protected server operations.</p></div><button class="secondary-button" id="exportActivity"><i class="fa-solid fa-file-csv"></i> Export CSV</button></div>
+                <div class="toolbar"><label class="search-field"><i class="fa-solid fa-magnifying-glass"></i><input id="activitySearch" type="search" placeholder="Search event, account, or email"></label><select id="activityTypeFilter" aria-label="Filter activity"><option value="all">All events</option><option value="login">Logins</option><option value="logout">Logouts</option><option value="register">Registrations</option><option value="anonymous_reveal">Reveals</option></select></div>
+                <div class="panel table-panel"><div class="table-scroll"><table><thead><tr><th>When</th><th>Event</th><th>Account</th><th>Details</th></tr></thead><tbody id="activityTable"></tbody></table></div></div>
+            </section>
+
+            <section class="admin-section" data-panel="messages">
+                <div class="section-heading"><div><h2>Anonymous messages</h2><p>Review messages and attachments without exposing private sender identities.</p></div><button class="secondary-button" id="exportMessages"><i class="fa-solid fa-file-csv"></i> Export CSV</button></div>
+                <div class="toolbar"><label class="search-field"><i class="fa-solid fa-magnifying-glass"></i><input id="messageSearch" type="search" placeholder="Search message content or recipient"></label><select id="messageReadFilter" aria-label="Filter messages"><option value="all">All messages</option><option value="unread">Unread</option><option value="read">Read</option></select></div>
+                <div class="panel table-panel"><div class="table-scroll"><table><thead><tr><th>Received</th><th>Recipient</th><th>Message</th><th>Attachment</th><th>Status</th></tr></thead><tbody id="messagesTable"></tbody></table></div></div>
+                <div class="panel table-panel reveal-panel"><div class="panel-heading"><div><h3>Reveal purchases</h3><p>Verified records only</p></div></div><div class="table-scroll"><table><thead><tr><th>Verified</th><th>Recipient</th><th>Message ID</th><th>Provider reference</th><th>Amount</th></tr></thead><tbody id="purchasesTable"></tbody></table></div></div>
+            </section>
+
+            <section class="admin-section" data-panel="access">
+                <div class="section-heading"><div><h2>Free Anonymous Reveal Access</h2><p>Grant and revoke stored access. Existing purchased reveals are never removed.</p></div></div>
+                <div class="panel grant-panel"><div><h3>Grant access</h3><p>Select a registered user to let them reveal eligible senders at no charge.</p></div><form id="grantAccessForm" class="grant-form"><label><span>User</span><select id="grantUser" required></select></label><button class="primary-button" type="submit"><i class="fa-solid fa-key"></i> Grant free access</button></form></div>
+                <div class="panel table-panel"><div class="panel-heading"><div><h3>Access register</h3><p>Grant and revocation history from protected records</p></div></div><div class="table-scroll"><table><thead><tr><th>User</th><th>Status</th><th>Granted by</th><th>Granted</th><th>Action</th></tr></thead><tbody id="permissionsTable"></tbody></table></div></div>
+            </section>
+
+            <section class="admin-section" data-panel="reports">
+                <div class="section-heading"><div><h2>Analytics and reports</h2><p>Daily figures use database aggregates, including verified ₦500 revenue only.</p></div><button class="secondary-button" id="exportAnalytics"><i class="fa-solid fa-file-csv"></i> Export 30-day CSV</button></div>
+                <div class="report-grid"><article class="panel chart-panel"><div class="panel-heading"><div><h3>Registrations and logins</h3><p>Last 30 days</p></div></div><div class="bar-chart" id="reportChart"></div></article><article class="panel report-table"><h3>Daily report</h3><div class="table-scroll"><table><thead><tr><th>Date</th><th>New users</th><th>Logins</th><th>Messages</th><th>Paid reveals</th><th>Revenue</th></tr></thead><tbody id="analyticsTable"></tbody></table></div></article></div>
+            </section>
+        </main>
+    </div>
+    <div class="toast-region" id="toastRegion" aria-live="polite" aria-atomic="true"></div>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="/js/supabase-config.js"></script>
+    <script src="/js/auth.js"></script>
+    <script src="/js/admin.js"></script>
+</body>
+</html>

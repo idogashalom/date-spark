@@ -400,11 +400,9 @@
                 "What's your greatest talent?",
                 "What's your favorite hobby?",
                 "What's the best gift you've ever received?",
-                "What's your biggest inspiration?",
                 "What's your favorite way to be creative?",
                 "What's your most important life lesson so far?",
                 "What's your favorite thing about yourself?",
-                "What's your biggest challenge right now?",
                 "What's your greatest strength?",
                 "What's your favorite form of self-care?",
                 "What's your biggest accomplishment?",
@@ -422,9 +420,15 @@
 
         function buildQuestions() {
             const list = [];
+            const seenQuestionText = new Set();
             let id = 1;
             Object.keys(questionTemplates).forEach(category => {
                 questionTemplates[category].forEach(text => {
+                    // This makes accidental future copy/paste variants harmless
+                    // in the All Questions pool as well as category pools.
+                    const normalizedText = text.toLowerCase().replace(/\s+/g, ' ').replace(/[^\p{L}\p{N}\s]/gu, '').trim();
+                    if (seenQuestionText.has(normalizedText)) return;
+                    seenQuestionText.add(normalizedText);
                     list.push({ id: id++, text, category });
                 });
             });
@@ -441,14 +445,6 @@
             personal: { class: 'category-personal', label: '💫 Personal' }
         };
 
-        // ===== STATE =====
-        let filteredQuestions = [...questions];
-        let currentQuestionIndex = 0;
-        let recentIds = []; // avoid quick repeats
-        let savedQuestions = safeParse(localStorage.getItem('savedQuestions'), []);
-        let likes = safeParse(localStorage.getItem('questionLikes'), {});
-        let isAnimating = false;
-
         function safeParse(raw, fallback) {
             try {
                 const val = JSON.parse(raw);
@@ -456,6 +452,128 @@
             } catch (e) {
                 return fallback;
             }
+        }
+
+        // ===== QUESTION SHUFFLE STATE =====
+        // Each signed-in account has a separate shuffle bag for All Questions
+        // and for every category. A bag holds each eligible ID exactly once.
+        const QUESTION_HISTORY_VERSION = 1;
+        const questionPoolNames = ['all', ...Object.keys(questionTemplates)];
+        let questionHistoryStorageKey = '';
+        let questionHistory = null;
+        let activeQuestionCategory = 'all';
+        let filteredQuestions = [...questions];
+        let currentQuestion = null;
+        let currentQuestionIndex = 0;
+        let savedQuestions = safeParse(localStorage.getItem('savedQuestions'), []);
+        let likes = safeParse(localStorage.getItem('questionLikes'), {});
+        let isAnimating = false;
+
+        function getQuestionsForPool(category) {
+            return category === 'all' ? questions : questions.filter(question => question.category === category);
+        }
+
+        function createQuestionHistory() {
+            return { version: QUESTION_HISTORY_VERSION, activeCategory: 'all', currentQuestionId: null, pools: {} };
+        }
+
+        function normalizePoolState(pool, availableIds) {
+            const available = new Set(availableIds);
+            const queued = Array.isArray(pool?.queue) ? pool.queue : [];
+            return {
+                queue: [...new Set(queued.filter(id => available.has(id)))],
+                lastId: available.has(pool?.lastId) ? pool.lastId : null,
+                shownInCycle: Math.min(Math.max(Number(pool?.shownInCycle) || 0, 0), availableIds.length)
+            };
+        }
+
+        function persistQuestionHistory() {
+            if (questionHistoryStorageKey && questionHistory) {
+                localStorage.setItem(questionHistoryStorageKey, JSON.stringify(questionHistory));
+            }
+        }
+
+        function restoreQuestionHistory(userId) {
+            questionHistoryStorageKey = `dateSpark:questionShuffle:${userId}`;
+            const stored = safeParse(localStorage.getItem(questionHistoryStorageKey), null);
+            questionHistory = stored?.version === QUESTION_HISTORY_VERSION ? stored : createQuestionHistory();
+            questionHistory.pools = questionHistory.pools || {};
+
+            questionPoolNames.forEach(category => {
+                const ids = getQuestionsForPool(category).map(question => question.id);
+                questionHistory.pools[category] = normalizePoolState(questionHistory.pools[category], ids);
+            });
+
+            if (!questionPoolNames.includes(questionHistory.activeCategory)) questionHistory.activeCategory = 'all';
+            const storedQuestion = questions.find(question => question.id === questionHistory.currentQuestionId);
+            if (!storedQuestion || !getQuestionsForPool(questionHistory.activeCategory).some(question => question.id === storedQuestion.id)) {
+                questionHistory.currentQuestionId = null;
+            }
+            persistQuestionHistory();
+        }
+
+        function shuffleIds(ids) {
+            const shuffled = [...ids];
+            for (let index = shuffled.length - 1; index > 0; index--) {
+                const nextIndex = Math.floor(Math.random() * (index + 1));
+                [shuffled[index], shuffled[nextIndex]] = [shuffled[nextIndex], shuffled[index]];
+            }
+            return shuffled;
+        }
+
+        function refillQuestionBag(category) {
+            const pool = questionHistory.pools[category];
+            const ids = shuffleIds(getQuestionsForPool(category).map(question => question.id));
+            // A fresh cycle cannot begin with the question that ended the prior cycle.
+            if (ids.length > 1 && ids[0] === pool.lastId) [ids[0], ids[1]] = [ids[1], ids[0]];
+            pool.queue = ids;
+            pool.shownInCycle = 0;
+        }
+
+        function moveQueueItemAwayFromCurrent(pool, category) {
+            if (!currentQuestion || pool.queue[0] !== currentQuestion.id) return;
+            const alternativeIndex = pool.queue.findIndex(id => id !== currentQuestion.id);
+            if (alternativeIndex > 0) {
+                [pool.queue[0], pool.queue[alternativeIndex]] = [pool.queue[alternativeIndex], pool.queue[0]];
+                return;
+            }
+            // A switch can find the current card as the only item left in an old
+            // bag. Starting its next cycle avoids a consecutive duplicate.
+            if (getQuestionsForPool(category).length > 1) {
+                refillQuestionBag(category);
+                const freshAlternativeIndex = pool.queue.findIndex(id => id !== currentQuestion.id);
+                if (freshAlternativeIndex > 0) {
+                    [pool.queue[0], pool.queue[freshAlternativeIndex]] = [pool.queue[freshAlternativeIndex], pool.queue[0]];
+                }
+            }
+        }
+
+        function takeNextQuestion(category) {
+            const poolQuestions = getQuestionsForPool(category);
+            filteredQuestions = poolQuestions;
+            if (!poolQuestions.length) return null;
+
+            const pool = questionHistory.pools[category];
+            if (!pool.queue.length) refillQuestionBag(category);
+            moveQueueItemAwayFromCurrent(pool, category);
+            const id = pool.queue.shift();
+            const question = questions.find(item => item.id === id) || null;
+            if (!question) return null;
+
+            pool.lastId = id;
+            pool.shownInCycle += 1;
+            activeQuestionCategory = category;
+            questionHistory.activeCategory = category;
+            questionHistory.currentQuestionId = id;
+            persistQuestionHistory();
+            return question;
+        }
+
+        function syncCurrentQuestion(question, category = activeQuestionCategory) {
+            currentQuestion = question;
+            activeQuestionCategory = category;
+            filteredQuestions = getQuestionsForPool(category);
+            currentQuestionIndex = Math.max(0, filteredQuestions.findIndex(item => item.id === question.id));
         }
 
         // ===== DOM REFS =====
@@ -471,23 +589,6 @@
         const saveBtn = document.getElementById('saveBtn');
 
         // ===== QUESTION DISPLAY =====
-        function pickNextQuestion() {
-            if (filteredQuestions.length === 0) return null;
-            if (filteredQuestions.length === 1) return filteredQuestions[0];
-
-            let candidate;
-            let attempts = 0;
-            do {
-                candidate = filteredQuestions[Math.floor(Math.random() * filteredQuestions.length)];
-                attempts++;
-            } while (recentIds.includes(candidate.id) && attempts < 15);
-
-            recentIds.push(candidate.id);
-            if (recentIds.length > Math.min(5, filteredQuestions.length - 1)) recentIds.shift();
-
-            return candidate;
-        }
-
         function displayQuestion(question) {
             if (!question || isAnimating) return;
             isAnimating = true;
@@ -495,10 +596,11 @@
             questionCard.classList.add('slide-out');
 
             setTimeout(() => {
-                const index = filteredQuestions.findIndex(q => q.id === question.id);
-                currentQuestionIndex = index >= 0 ? index : 0;
+                syncCurrentQuestion(question);
+                const pool = questionHistory?.pools[activeQuestionCategory];
+                const position = Math.max(1, pool?.shownInCycle || 1);
 
-                questionNumber.textContent = `#${currentQuestionIndex + 1} of ${filteredQuestions.length}`;
+                questionNumber.textContent = `#${position} of ${filteredQuestions.length}`;
                 questionTextContent.textContent = question.text;
 
                 const cat = categoryMap[question.category] || categoryMap.fun;
@@ -520,7 +622,6 @@
                     isAnimating = false;
                 }, 500);
 
-                localStorage.setItem('lastQuestionId', String(question.id));
             }, 300);
         }
 
@@ -535,38 +636,31 @@
 
         function updateProgressDots() {
             const dotCount = Math.min(filteredQuestions.length, 5);
+            const shownInCycle = questionHistory?.pools[activeQuestionCategory]?.shownInCycle || 1;
             progressDots.innerHTML = '';
             for (let i = 0; i < dotCount; i++) {
                 const dot = document.createElement('span');
                 dot.className = 'dot';
-                if (i === currentQuestionIndex % dotCount) dot.classList.add('active');
+                if (i === (shownInCycle - 1) % dotCount) dot.classList.add('active');
                 progressDots.appendChild(dot);
             }
         }
 
         function getNewQuestion() {
             if (isAnimating) return;
-            const question = pickNextQuestion();
+            const question = takeNextQuestion(activeQuestionCategory);
             displayQuestion(question);
         }
 
         // ===== FILTERING =====
         function filterQuestions(category) {
-            localStorage.setItem('lastCategory', category);
-
-            filteredQuestions = category === 'all' ?
-                [...questions] :
-                questions.filter(q => q.category === category);
-
             document.querySelectorAll('.filter-btn').forEach(btn => {
                 btn.classList.toggle('active', btn.dataset.category === category);
             });
 
-            recentIds = [];
-
-            if (filteredQuestions.length > 0) {
-                currentQuestionIndex = 0;
-                displayQuestion(filteredQuestions[0]);
+            const question = takeNextQuestion(category);
+            if (question) {
+                displayQuestion(question);
             } else {
                 questionTextContent.textContent = 'No questions in this category yet!';
                 questionCategory.textContent = '❓ Empty';
@@ -576,7 +670,7 @@
 
         // ===== SAVE / SPOUSE LIST =====
         function saveQuestion() {
-            const question = filteredQuestions[currentQuestionIndex];
+            const question = currentQuestion;
             if (!question) {
                 showToast('No question to save!', 'error');
                 return;
@@ -638,10 +732,10 @@
             const question = questions.find(q => q.id === id);
             if (!question) return;
 
-            const inFiltered = filteredQuestions.find(q => q.id === id);
-            if (!inFiltered) {
-                filteredQuestions = [question, ...filteredQuestions];
-            }
+            activeQuestionCategory = question.category;
+            questionHistory.activeCategory = question.category;
+            questionHistory.currentQuestionId = question.id;
+            persistQuestionHistory();
             displayQuestion(question);
             document.getElementById('questionWrapper').scrollIntoView({ behavior: 'smooth' });
         }
@@ -654,7 +748,7 @@
             updateSavedQuestions();
             showToast('Removed from saved ❌', 'info');
 
-            const question = filteredQuestions[currentQuestionIndex];
+            const question = currentQuestion;
             if (question && question.id === id) refreshSaveButton(question);
         }
 
@@ -728,7 +822,7 @@
             if (added > 0) {
                 localStorage.setItem('savedQuestions', JSON.stringify(savedQuestions));
                 updateSavedQuestions();
-                const current = filteredQuestions[currentQuestionIndex];
+                const current = currentQuestion;
                 if (current) refreshSaveButton(current);
             }
             return added;
@@ -736,7 +830,7 @@
 
         // ===== LIKES =====
         function toggleLike() {
-            const question = filteredQuestions[currentQuestionIndex];
+            const question = currentQuestion;
             if (!question) return;
 
             const liked = localStorage.getItem(`liked_${question.id}`) === 'true';
@@ -759,7 +853,7 @@
 
         // ===== COPY / SHARE =====
         function copyQuestion() {
-            const question = filteredQuestions[currentQuestionIndex];
+            const question = currentQuestion;
             if (!question) return;
 
             const text = `Date Spark Question:\n\n"${question.text}"\n\nCategory: ${question.category}`;
@@ -790,7 +884,7 @@
         }
 
         function shareQuestionLegacy() {
-            const question = filteredQuestions[currentQuestionIndex];
+            const question = currentQuestion;
             if (!question) return;
 
             const text = `Hey! Check out this question from Date Spark:\n\n"${question.text}"\n\nWhat would your answer be?`;
@@ -864,7 +958,7 @@
 
         // ===== SHARE / EXPORT CARDS =====
         let sharePayload = null;
-        function getQuestionPayload() { const q = filteredQuestions[currentQuestionIndex]; return q && { title: 'Date Spark Question', label: (categoryMap[q.category] || {}).label || q.category, text: q.text }; }
+        function getQuestionPayload() { const q = currentQuestion; return q && { title: 'Date Spark Question', label: (categoryMap[q.category] || {}).label || q.category, text: q.text }; }
         function openShare(payload) { sharePayload = payload || getQuestionPayload(); if (!sharePayload) return; openModal('shareModal'); }
         function shareQuestion() { openShare(); }
         function openTextFallback(text) {
@@ -1190,11 +1284,37 @@
             if (error) { anonymousState.error = 'Could not load your inbox. Please try again.'; anonymousState.loading = false; renderAnonymous(); return; }
             anonymousState.inbox = inbox || null;
             if (inbox) {
-                const { data: messages, error: messageError } = await client.from('anonymous_messages').select('id, message_text, image_path, created_at, is_read').eq('inbox_id', inbox.id).order('created_at', { ascending: false });
+                // This RPC returns safe message fields plus the reveal state. The
+                // sender relationship stays server-side until a reveal is allowed.
+                const { data: messages, error: messageError } = await client.rpc('get_owner_anonymous_messages', { p_inbox_id: inbox.id });
                 anonymousState.messages = messageError ? [] : messages || [];
                 await Promise.all(anonymousState.messages.filter(message => message.image_path).map(async message => { message.imageUrl = await ownerImageUrl(message.image_path); }));
             } else anonymousState.messages = [];
             anonymousState.error = ''; anonymousState.loading = false; renderAnonymous();
+        }
+        function anonymousRevealAction(message) {
+            if (!message.sender_identity_available) return '<span class="anonymous-identity-unavailable">Sender identity unavailable</span>';
+            if (message.senderName) return `<span class="anonymous-sender-name"><i class="fas fa-user-check"></i> Sender: ${escapeHtml(message.senderName)}</span>`;
+            if (message.reveal_status === 'revealed') return `<button class="action-btn" data-game-action="reveal-anonymous-sender" data-message-id="${message.id}"><i class="fas fa-eye"></i> View Revealed Sender</button>`;
+            if (message.reveal_status === 'free_access') return `<button class="action-btn btn-free-reveal" data-game-action="reveal-anonymous-sender" data-message-id="${message.id}"><i class="fas fa-gift"></i> Reveal Sender Free</button>`;
+            return `<button class="action-btn btn-reveal-sender" data-game-action="reveal-anonymous-sender" data-message-id="${message.id}"><i class="fas fa-lock"></i> Reveal Sender &ndash; &#8358;500</button>`;
+        }
+        async function revealAnonymousSender(messageId) {
+            const message = anonymousState.messages.find(item => String(item.id) === String(messageId));
+            if (!message) return;
+            if (!message.sender_identity_available) return showToast('The sender did not provide a verified Date Spark identity.', 'info');
+            if (message.reveal_status === 'payment_required') {
+                // No payment provider exists in this project yet. Never unlock a
+                // sender from a browser-side payment claim.
+                showToast('Secure payments for sender reveals are not configured yet. Your sender remains protected.', 'info');
+                return;
+            }
+            const result = await AUTH.revealAnonymousSender(message.id);
+            if (!result.success) return showToast(result.message, result.unavailable ? 'info' : 'error');
+            message.senderName = result.name;
+            message.reveal_status = 'revealed';
+            renderAnonymous();
+            showToast('Sender revealed for this message.', 'success');
         }
         async function renderAnonymous() {
             const content = document.getElementById('gameContent');
@@ -1202,10 +1322,10 @@
             const unread = anonymousState.messages.filter(message => !message.is_read).length;
             if (anonymousState.loading) { content.innerHTML = `<span class="game-kicker">SPECIALS</span><h2 id="gameTitle">LET THEM SAY IT</h2><p class="anonymous-loading"><i class="fas fa-spinner fa-spin"></i> Opening your secret inbox...</p>`; return; }
             if (anonymousState.error) { content.innerHTML = `<span class="game-kicker">SPECIALS</span><h2 id="gameTitle">LET THEM SAY IT</h2><p class="disclosure">${escapeHtml(anonymousState.error)}</p><div class="game-actions"><button class="btn btn-primary" data-game-action="reload-anonymous">Try again</button></div>`; return; }
-            if (!anonymousState.inbox) { content.innerHTML = `<section class="anonymous-owner"><span class="game-kicker">SPECIALS</span><h2 id="gameTitle">LET THEM SAY IT <span aria-hidden="true">&#128064;</span></h2><p class="anonymous-lede">Your anonymous corner for confessions, compliments, chaos and everything people are too shy to say out loud.</p><div class="anonymous-orbit"><i class="fas fa-envelope-open-text"></i><span>say it</span></div><h3>Create your anonymous inbox</h3><p>Make one personal link, drop it anywhere, and let the messages roll in. Names are never requested or shown.</p><div class="game-actions"><button class="btn btn-primary" data-game-action="create-anonymous" ${anonymousState.creating ? 'disabled' : ''}><i class="fas ${anonymousState.creating ? 'fa-spinner fa-spin' : 'fa-link'}"></i> ${anonymousState.creating ? 'Creating link...' : 'Create My Anonymous Link'}</button></div></section>`; return; }
+            if (!anonymousState.inbox) { content.innerHTML = `<section class="anonymous-owner"><span class="game-kicker">SPECIALS</span><h2 id="gameTitle">LET THEM SAY IT <span aria-hidden="true">&#128064;</span></h2><p class="anonymous-lede">Your anonymous corner for confessions, compliments, chaos and everything people are too shy to say out loud.</p><div class="anonymous-orbit"><i class="fas fa-envelope-open-text"></i><span>say it</span></div><h3>Create your anonymous inbox</h3><p>Make one personal link, drop it anywhere, and let the messages roll in. Signed-in senders are told that their saved account name may be revealed after a verified payment or free access is granted.</p><div class="game-actions"><button class="btn btn-primary" data-game-action="create-anonymous" ${anonymousState.creating ? 'disabled' : ''}><i class="fas ${anonymousState.creating ? 'fa-spinner fa-spin' : 'fa-link'}"></i> ${anonymousState.creating ? 'Creating link...' : 'Create My Anonymous Link'}</button></div></section>`; return; }
             const link = anonymousLink(anonymousState.inbox.public_token);
             const messages = anonymousState.messages.filter(message => anonymousState.filter === 'all' || !message.is_read);
-            content.innerHTML = `<section class="anonymous-owner"><span class="game-kicker">SPECIALS</span><h2 id="gameTitle">LET THEM SAY IT <span aria-hidden="true">&#128064;</span></h2><p class="anonymous-lede">Your anonymous inbox is ready. Drop this link anywhere and let the messages roll in.</p><div class="anonymous-link-panel"><span>Your personal link</span><code>${escapeHtml(link)}</code><div class="anonymous-link-actions"><button class="btn btn-secondary" data-game-action="copy-anonymous-link"><i class="fas fa-copy"></i> Copy My Link</button><button class="btn btn-outline" data-game-action="share-anonymous-link"><i class="fas fa-share-nodes"></i> Share My Link</button></div></div><div class="anonymous-inbox-heading"><div><h3>Your Secret Inbox <span aria-hidden="true">&#128064;</span></h3><p>${unread ? `You have ${unread} new ${unread === 1 ? 'message' : 'messages'}.` : 'No new messages right now.'}</p></div>${anonymousState.messages.length ? '<button class="action-btn danger-action" data-game-action="clear-anonymous">Clear all</button>' : ''}</div><div class="mode-switch anonymous-filters"><button data-anonymous-filter="all" class="${anonymousState.filter === 'all' ? 'active' : ''}">All <span>${anonymousState.messages.length}</span></button><button data-anonymous-filter="unread" class="${anonymousState.filter === 'unread' ? 'active' : ''}">Unread <span>${unread}</span></button></div><div class="anonymous-inbox">${messages.length ? messages.map(message => `<article class="anonymous-message ${message.is_read ? '' : 'is-unread'}" data-message-id="${message.id}"><div class="anonymous-message-meta"><span>${message.is_read ? 'Read' : 'New'}</span><time>${anonymousTime(message.created_at)}</time></div>${message.message_text ? `<p>${escapeHtml(message.message_text)}</p>` : ''}${message.imageUrl ? `<img src="${escapeHtml(message.imageUrl)}" alt="Anonymous attachment">` : message.image_path ? '<p class="image-unavailable">Image attachment unavailable.</p>' : ''}<div class="anonymous-message-actions"><button class="action-btn" data-game-action="share-anonymous-message" data-message-id="${message.id}"><i class="fas fa-share-alt"></i> Share</button><button class="action-btn" data-game-action="read-anonymous-message" data-message-id="${message.id}">${message.is_read ? 'Mark unread' : 'Mark read'}</button><button class="action-btn danger-action" data-game-action="delete-anonymous-message" data-message-id="${message.id}"><i class="fas fa-trash"></i> Delete</button></div></article>`).join('') : `<div class="anonymous-empty"><i class="fas fa-envelope-open-text"></i><h3>No secrets yet</h3><p>Share your link and see what people have been too shy to tell you.</p></div>`}</div></section>`;
+            content.innerHTML = `<section class="anonymous-owner"><span class="game-kicker">SPECIALS</span><h2 id="gameTitle">LET THEM SAY IT <span aria-hidden="true">&#128064;</span></h2><p class="anonymous-lede">Your anonymous inbox is ready. Drop this link anywhere and let the messages roll in.</p><div class="anonymous-link-panel"><span>Your personal link</span><code>${escapeHtml(link)}</code><div class="anonymous-link-actions"><button class="btn btn-secondary" data-game-action="copy-anonymous-link"><i class="fas fa-copy"></i> Copy My Link</button><button class="btn btn-outline" data-game-action="share-anonymous-link"><i class="fas fa-share-nodes"></i> Share My Link</button></div></div><div class="anonymous-inbox-heading"><div><h3>Your Secret Inbox <span aria-hidden="true">&#128064;</span></h3><p>${unread ? `You have ${unread} new ${unread === 1 ? 'message' : 'messages'}.` : 'No new messages right now.'}</p></div>${anonymousState.messages.length ? '<button class="action-btn danger-action" data-game-action="clear-anonymous">Clear all</button>' : ''}</div><div class="mode-switch anonymous-filters"><button data-anonymous-filter="all" class="${anonymousState.filter === 'all' ? 'active' : ''}">All <span>${anonymousState.messages.length}</span></button><button data-anonymous-filter="unread" class="${anonymousState.filter === 'unread' ? 'active' : ''}">Unread <span>${unread}</span></button></div><div class="anonymous-inbox">${messages.length ? messages.map(message => `<article class="anonymous-message ${message.is_read ? '' : 'is-unread'}" data-message-id="${message.id}"><div class="anonymous-message-meta"><span>${message.is_read ? 'Read' : 'New'}</span><time>${anonymousTime(message.created_at)}</time></div>${message.message_text ? `<p>${escapeHtml(message.message_text)}</p>` : ''}${message.imageUrl ? `<img src="${escapeHtml(message.imageUrl)}" alt="Anonymous attachment">` : message.image_path ? '<p class="image-unavailable">Image attachment unavailable.</p>' : ''}<div class="anonymous-message-actions">${anonymousRevealAction(message)}<button class="action-btn" data-game-action="share-anonymous-message" data-message-id="${message.id}"><i class="fas fa-share-alt"></i> Share</button><button class="action-btn" data-game-action="read-anonymous-message" data-message-id="${message.id}">${message.is_read ? 'Mark unread' : 'Mark read'}</button><button class="action-btn danger-action" data-game-action="delete-anonymous-message" data-message-id="${message.id}"><i class="fas fa-trash"></i> Delete</button></div></article>`).join('') : `<div class="anonymous-empty"><i class="fas fa-envelope-open-text"></i><h3>No secrets yet</h3><p>Share your link and see what people have been too shy to tell you.</p></div>`}</div></section>`;
         }
         function anonymousMessagePayload(message) { return { title: 'Someone anonymously sent me', label: 'Anonymous message', eyebrow: 'SOMEONE ANONYMOUSLY SENT YOU...', text: message.message_text || 'An anonymous image message', imageUrl: message.imageUrl || '', footer: 'Anonymous  •  Date Spark' }; }
         async function createAnonymousInbox() {
@@ -1314,6 +1434,7 @@
                 case 'copy-anonymous-link': fallbackCopy(anonymousLink(anonymousState.inbox.public_token)); break;
                 case 'share-anonymous-link': openShare({ title: 'My Date Spark anonymous inbox', label: 'Let Them Say It', text: `Tell me something you've always wanted to say...\n\nNo pressure. No awkwardness.\n\n${anonymousLink(anonymousState.inbox.public_token)}` }); break;
                 case 'share-anonymous-message': { const message = anonymousState.messages.find(item => String(item.id) === String(button.dataset.messageId)); if (message) { openShare(anonymousMessagePayload(message)); if (!message.is_read) updateAnonymousRead(message.id, true); } break; }
+                case 'reveal-anonymous-sender': revealAnonymousSender(button.dataset.messageId); break;
                 case 'read-anonymous-message': { const message = anonymousState.messages.find(item => String(item.id) === String(button.dataset.messageId)); if (message) updateAnonymousRead(message.id, !message.is_read); break; }
                 case 'delete-anonymous-message': deleteAnonymousMessage(button.dataset.messageId); break;
                 case 'clear-anonymous': { if (!confirm('Delete every message in your anonymous inbox?')) break; const client = getAnonymousClient(); const { error } = await client.from('anonymous_messages').delete().eq('inbox_id', anonymousState.inbox.id); if (error) showToast('Could not clear your inbox.', 'error'); else { anonymousState.messages = []; renderAnonymous(); showToast('Inbox cleared.', 'info'); } break; }
@@ -1370,24 +1491,20 @@
         (async function init() {
             const currentUser = await AUTH.requireAuth('html/login.html');
             if (!currentUser) return;
-            if (currentUser) {
-                document.getElementById('userGreeting').textContent = `Hi, ${currentUser.username}`;
-            }
+            document.getElementById('userGreeting').textContent = currentUser.full_name
+                ? `Hello, ${currentUser.full_name}!`
+                : 'Hello!';
 
-            const lastCategory = localStorage.getItem('lastCategory') || 'all';
-            filteredQuestions = lastCategory === 'all' ?
-                [...questions] :
-                questions.filter(q => q.category === lastCategory);
+            restoreQuestionHistory(currentUser.id);
+            activeQuestionCategory = questionHistory.activeCategory;
+            filteredQuestions = getQuestionsForPool(activeQuestionCategory);
 
             document.querySelectorAll('.filter-btn').forEach(btn => {
-                btn.classList.toggle('active', btn.dataset.category === lastCategory);
+                btn.classList.toggle('active', btn.dataset.category === activeQuestionCategory);
             });
 
-            const lastId = parseInt(localStorage.getItem('lastQuestionId'), 10);
-            let startQuestion = filteredQuestions.find(q => q.id === lastId);
-            if (!startQuestion) startQuestion = filteredQuestions[0];
-
-            currentQuestionIndex = 0;
+            let startQuestion = questions.find(question => question.id === questionHistory.currentQuestionId);
+            if (!startQuestion) startQuestion = takeNextQuestion(activeQuestionCategory);
             displayQuestion(startQuestion);
             updateSavedQuestions();
 

@@ -191,16 +191,27 @@ const AUTH = (() => {
         return error ? null : data.user;
     }
 
+    const PROFILE_COLUMNS = 'id, username, full_name, email, role, is_suspended, last_active_at, created_at, updated_at';
+    const LEGACY_PROFILE_COLUMNS = 'id, username, email, role, created_at, updated_at';
+    let profileIssue = null; // 'missing' | 'error' | null, explains a null profile
+
     async function getCurrentProfile() {
         const supabase = getClient();
         const user = await getSessionUser();
+        profileIssue = null;
         if (!supabase || !user) return null;
-        const { data, error } = await supabase
-            .from('profiles')
-            .select('id, username, full_name, email, role, is_suspended, last_active_at, created_at, updated_at')
-            .eq('id', user.id)
-            .maybeSingle();
-        return error ? null : data;
+        let { data, error } = await supabase.from('profiles').select(PROFILE_COLUMNS).eq('id', user.id).maybeSingle();
+        if (error) {
+            // The admin migration adds full_name / is_suspended / last_active_at.
+            // If it has not been applied yet, fall back to the original columns so
+            // sign-in keeps working instead of reporting the account as unavailable.
+            const legacy = await supabase.from('profiles').select(LEGACY_PROFILE_COLUMNS).eq('id', user.id).maybeSingle();
+            if (legacy.error) { profileIssue = 'error'; return null; }
+            data = legacy.data && { ...legacy.data, full_name: null, is_suspended: false, last_active_at: null };
+        }
+        if (!data) { profileIssue = 'missing'; return null; }
+        if (!data.full_name && user.user_metadata?.full_name) data.full_name = String(user.user_metadata.full_name).trim();
+        return data;
     }
 
     async function getCurrentUser() {
@@ -251,12 +262,20 @@ const AUTH = (() => {
         if (error) return { success: false, message: friendlyError(error, 'Unable to sign in. Please try again.') };
         const profile = await getCurrentProfile();
         if (!profile || profile.is_suspended) {
+            const issue = profileIssue;
             await supabase.auth.signOut();
+            if (!profile && issue === 'error') return { success: false, message: 'Your account profile could not be loaded. Please try again, or contact Date Spark support if this continues.' };
+            if (!profile && issue === 'missing') return { success: false, message: 'Your account setup is incomplete (no profile record was found). Please contact Date Spark support.' };
             return { success: false, message: 'This account is currently unavailable. Please contact Date Spark support.' };
         }
         touchSession(data.user.id, '/html/login.html', true);
         await recordActivity('login');
-        return { success: true, message: profile.full_name ? `Hello, ${profile.full_name}! Redirecting...` : 'Hello! Redirecting...' };
+        return {
+            success: true,
+            role: profile.role,
+            redirect: profile.role === 'admin' ? '/html/admin.html' : '/index.html',
+            message: profile.full_name ? `Hello, ${profile.full_name}! Redirecting...` : 'Hello! Redirecting...'
+        };
     }
 
     async function logout() {
@@ -296,7 +315,8 @@ const AUTH = (() => {
             clearSessionActivity();
             return null;
         }
-        window.location.replace(appPage);
+        const onLoginPage = /login\.html$/.test(window.location.pathname);
+        window.location.replace(profile.role === 'admin' && onLoginPage ? '/html/admin.html' : appPage);
         return profile;
     }
 
